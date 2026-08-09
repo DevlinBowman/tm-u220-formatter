@@ -24,10 +24,11 @@ any repository file:
 | [CP1252.TXT](https://www.unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP1252.TXT) | `f607ae328b4dff5e9bfef725f5fff0ae23f38797f8a5b95998a0d2735c0e8fad` |
 
 The generated outputs are the nine modules under
-`src/tm_u220/charset/pages/` and the public standard-page specimen in
+`src/tm_u220/charset/pages/`, the browser-safe PC437 descriptor at
+`web/charset/page-00-pc437.js`, and the public standard-page specimen in
 `examples/chars.txt`. The PC437 matrix in `examples/example.txt` also contains
-Unicode-derived mapping data. Regenerate the modules and standard-page specimen
-with:
+Unicode-derived mapping data. Regenerate the modules, browser descriptor, and
+standard-page specimen with:
 
 ```sh
 node dev/charset/generate_standard_pages.mjs PATH_TO_MAPPING_FILES

@@ -1,3 +1,5 @@
+// Verifies resident masks become deterministic pin strikes across printer style modes.
+// Byte-addressed extensions retain compiler page and resident-byte identity during lookup.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { glyphFor } from "../preview/printer-font/atlas.js";
@@ -114,4 +116,24 @@ test("character origins retain the compiler-provided whole-cell advance", () => 
     assert.equal(two.dots[index + firstCount].xHalfDots
       - two.dots[index].xHalfDots, 10);
   }
+});
+
+test("strike lookup receives the aligned compiler page and resident byte", () => {
+  const addresses = [];
+  const source = {
+    ...segment({}, "é"), code_page: 0, resident_bytes: [0x82],
+  };
+  const plan = planSegmentStrikes(source, (font, character, address) => {
+    addresses.push({ font, character, ...address });
+    return Object.freeze({
+      width: 7,
+      height: 9,
+      rows: Object.freeze([0b1000000, 0, 0, 0, 0, 0, 0, 0, 0]),
+    });
+  });
+  assert.deepEqual(addresses, [
+    { font: "b", character: "é", page: 0, byte: 0x82 },
+  ]);
+  assert.equal(plan.dots.length, 1);
+  assert.equal(plan.dots[0].xHalfDots, 0.5);
 });

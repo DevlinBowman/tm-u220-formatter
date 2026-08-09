@@ -1,21 +1,20 @@
-// Orchestrates the glyph catalog, draft matrix, study preview, and explicit fixed-target save.
-// The ordinary receipt editor and compiler are not imported into this development workspace.
+// Orchestrates PC437 selection, draft masks, study preview, and fixed-target updates.
+// Receipt compilation and persistence details remain in their independent domains.
 import { AppearanceModel } from "./appearance-model.js";
 import {
-  loadGlyphAtlas,
-  loadPreviewAppearance,
-  saveGlyphPattern,
-  savePreviewAppearance,
+  loadGlyphAtlas, loadPreviewAppearance, saveGlyphPattern, savePreviewAppearance,
 } from "./api.js";
-import { createGlyphCatalog } from "./catalog.js";
+import {
+  byteHex, createGlyphCatalog, glyphName, unicodeCode,
+} from "./catalog.js";
 import { fontAuthoringGuide } from "./font-guides.js";
 import { createDotGrid } from "./grid.js";
 import { GlyphEditorModel, patternRows } from "./model.js";
 import { createGlyphStudy, studyCellGeometry } from "./preview.js";
 import {
-  normalizeComparisonText,
-  studyPatterns,
-} from "./study-text.js";
+  createGlyphSaveAction, handleGlyphSaveShortcut, shouldWarnBeforeGlyphUnload,
+} from "./save-action.js";
+import { normalizeComparisonText, studyPatterns } from "./study-text.js";
 
 const $ = (selector) => document.querySelector(selector);
 let toastTimer;
@@ -31,10 +30,10 @@ try {
   const [response, appearanceValue] = await Promise.all([
     loadGlyphAtlas(), loadPreviewAppearance(),
   ]);
-  const model = new GlyphEditorModel(response.fonts);
+  const model = new GlyphEditorModel(response.catalog, response.fonts);
   const appearance = new AppearanceModel(appearanceValue);
-  const catalog = createGlyphCatalog($("#glyph-catalog"), (character) => {
-    model.select(model.font, character);
+  const catalog = createGlyphCatalog($("#glyph-catalog"), model.catalog, (glyph) => {
+    model.select(model.font, glyph.page, glyph.byte);
     render();
   });
   const grid = createDotGrid($("#dot-grid"), (row, column, value) => {
@@ -43,27 +42,40 @@ try {
   });
   const study = createGlyphStudy($("#glyph-study"));
   let studySpacingHalfDots = 3;
+  const saveAction = createGlyphSaveAction({
+    model,
+    save: saveGlyphPattern,
+    onBusy: () => toast("A glyph update is already in progress"),
+    onChange: () => render(),
+    onError: (error) => toast(`Couldn’t update glyph: ${error.message}`),
+    onSaved: ({ clean, snapshot }) => {
+      const name = glyphName(model.glyphFor(snapshot.page, snapshot.byte));
+      toast(`Updated Font ${snapshot.font.toUpperCase()} ${name}${
+        clean ? "" : "; newer dots remain unsaved"}`);
+    },
+  });
 
   function render() {
     const rows = patternRows(model.pattern, model.width, model.height);
     const comparison = studyPatterns(
-      $("#study-text").value,
-      model.fontData.patterns,
-      { character: model.character, pattern: model.pattern },
+      $("#study-text").value, model.catalog,
+      (page, byte) => model.savedPatternFor(model.font, page, byte),
+      { page: model.page, byte: model.byte, pattern: model.pattern },
     );
     const comparisonRows = comparison.patterns.map(
       (pattern) => patternRows(pattern, model.width, model.height));
     const cellGeometry = studyCellGeometry(
       model.width, model.height, studySpacingHalfDots);
     const fontGuide = fontAuthoringGuide(model.font, model.height);
-    const code = model.character.charCodeAt(0);
     document.querySelectorAll("[data-font]").forEach((button) => {
       const selected = button.dataset.font === model.font;
       button.classList.toggle("is-active", selected);
       button.setAttribute("aria-pressed", String(selected));
     });
-    catalog.render(model.fontData.patterns, model.character,
-      model.dirtyCharacters());
+    catalog.render({
+      selected: model.glyph, dirtyBytes: model.dirtyBytes(),
+      authoredBytes: model.authoredBytes(),
+    });
     grid.render(rows, {
       alignmentEdgeAfterRow: cellGeometry.alignmentEdgeAfterRow,
       authoringBaselineAfterRow: fontGuide.authoringBaselineAfterRow,
@@ -71,11 +83,13 @@ try {
     study.render(rows, {
       diameter: appearance.selectedDiameter,
       characterSpacingHalfDots: studySpacingHalfDots,
-      glyphRows: comparisonRows,
-      mode: appearance.mode,
+      glyphRows: comparisonRows, mode: appearance.mode,
     });
-    $("#glyph-title").textContent = `Font ${model.font.toUpperCase()} · ${model.character === " " ? "Space" : model.character}`;
-    $("#glyph-metrics").textContent = `ASCII ${code} · 0x${code.toString(16).toUpperCase().padStart(2, "0")} · ${model.width} half-dot positions × ${model.height} pins · authoring baseline after pin ${fontGuide.authoringBaselineAfterRow}`;
+    const name = glyphName(model.glyph);
+    $("#glyph-title").textContent = `Font ${model.font.toUpperCase()} · ${name}`;
+    $("#glyph-metrics").textContent = `PC437 0x${byteHex(model.byte)} · ${
+      unicodeCode(model.character)} · ${model.authored ? "authored" : "unauthored"} · ${
+      model.width} half-dot positions × ${model.height} pins`;
     $("#authoring-baseline-guide-copy").textContent = `Font ${model.font.toUpperCase()} authoring baseline after pin ${fontGuide.authoringBaselineAfterRow}. Epson defines no internal baseline; this is our reconstruction convention, and low glyph detail may extend below it.`;
     $("#alignment-guide-copy").textContent = `Epson matrix bottom · shared line alignment after pin ${model.height}. Pin ${model.height} remains editable.`;
     $("#geometry-cell-label").textContent = `${model.width} × ${model.height} glyph matrix`;
@@ -84,18 +98,21 @@ try {
     const diagram = $("#geometry-diagram");
     diagram.style.gridTemplateColumns = `${model.width}fr ${studySpacingHalfDots}fr`;
     diagram.style.gridTemplateRows = `${cellGeometry.matrixHeightVerticalUnits}fr ${cellGeometry.lineSpacingOutsideMatrixVerticalUnits}fr`;
-    diagram.style.setProperty("--authoring-baseline-position", `${fontGuide.authoringBaselineAfterRow / model.height * 100}%`);
+    diagram.style.setProperty("--authoring-baseline-position",
+      `${fontGuide.authoringBaselineAfterRow / model.height * 100}%`);
     diagram.setAttribute("aria-label", `Font ${model.font.toUpperCase()} uses a ${model.width} by ${model.height} editable matrix with our authoring baseline after pin ${fontGuide.authoringBaselineAfterRow}, followed by separate ${studySpacingHalfDots}-half-dot-position character spacing and ${cellGeometry.lineSpacingOutsideMatrixVerticalUnits} 1/144-inch feed units of line spacing outside the matrix`);
-    const displayCharacter = model.character === " " ? "Space" : model.character;
-    $("#study-context").textContent = `Selected ${displayCharacter} specimen + Font ${model.font.toUpperCase()} comparison · matching drafts update live · ${studySpacingHalfDots}-position character spacing`;
+    $("#study-context").textContent = `Selected ${name} specimen + Font ${model.font.toUpperCase()} comparison · matching drafts update live · ${studySpacingHalfDots}-position character spacing`;
     $("#pattern-output").value = model.pattern;
-    $("#save-button").disabled = !model.dirty;
+    $("#save-button").disabled = saveAction.pending || !model.needsSave;
+    $("#save-button").textContent = saveAction.pending ? "Updating…" : "Update glyph";
     $("#revert-button").disabled = !model.dirty;
     $("#restore-button").disabled = model.pattern === model.initialPattern;
+    $("#catalog-count").textContent = `${model.authoredCount}/${model.catalog.length} Font ${model.font.toUpperCase()} masks authored`;
     $("#draft-count").textContent = model.dirtyCount
       ? `${model.dirtyCount} unsaved ${model.dirtyCount === 1 ? "draft" : "drafts"}` : "No drafts";
-    $("#save-state").textContent = model.dirty
-      ? "Selected glyph has unsaved dots" : "Selected preview mask is saved";
+    $("#save-state").textContent = saveAction.pending ? "Updating selected glyph"
+      : model.dirty ? "Selected glyph has unsaved dots"
+        : model.authored ? "Selected preview mask is saved" : "Selected glyph has no authored mask";
     for (const mode of ["single", "double"]) {
       const input = $(`[data-dot-size="${mode}"]`);
       input.value = appearance.value[mode];
@@ -107,8 +124,7 @@ try {
       button.setAttribute("aria-pressed", String(selected));
     });
     document.querySelectorAll("[data-study-spacing]").forEach((button) => {
-      const selected = Number(button.dataset.studySpacing)
-        === studySpacingHalfDots;
+      const selected = Number(button.dataset.studySpacing) === studySpacingHalfDots;
       button.classList.toggle("is-active", selected);
       button.setAttribute("aria-pressed", String(selected));
     });
@@ -120,7 +136,7 @@ try {
 
   document.querySelectorAll("[data-font]").forEach((button) => {
     button.addEventListener("click", () => {
-      model.select(button.dataset.font, model.character);
+      model.select(button.dataset.font, model.page, model.byte);
       render();
     });
   });
@@ -133,20 +149,14 @@ try {
   });
   $("#study-text").addEventListener("input", (event) => {
     event.currentTarget.value = normalizeComparisonText(
-      event.currentTarget.value);
+      event.currentTarget.value, model.catalog);
     render();
   });
   document.querySelectorAll("[data-strike-mode]").forEach((button) => {
-    button.addEventListener("click", () => {
-      appearance.selectMode(button.dataset.strikeMode);
-      render();
-    });
+    button.addEventListener("click", () => { appearance.selectMode(button.dataset.strikeMode); render(); });
   });
   document.querySelectorAll("[data-study-spacing]").forEach((button) => {
-    button.addEventListener("click", () => {
-      studySpacingHalfDots = Number(button.dataset.studySpacing);
-      render();
-    });
+    button.addEventListener("click", () => { studySpacingHalfDots = Number(button.dataset.studySpacing); render(); });
   });
   document.querySelectorAll("[data-dot-size]").forEach((input) => {
     input.addEventListener("input", () => {
@@ -155,34 +165,25 @@ try {
       render();
     });
   });
-  $("#revert-sizes-button").addEventListener("click", () => {
-    appearance.revert();
-    render();
-  });
+  $("#revert-sizes-button").addEventListener("click", () => { appearance.revert(); render(); });
   $("#save-sizes-button").addEventListener("click", async () => {
     $("#save-sizes-button").disabled = true;
     try {
-      const saved = await savePreviewAppearance(
-        appearance.value, appearance.previous);
+      const saved = await savePreviewAppearance(appearance.value, appearance.previous);
       appearance.markSaved(saved.value);
       toast("Saved global preview dot sizes");
     } catch (error) { toast(`Couldn’t save dot sizes: ${error.message}`); }
     render();
   });
-  $("#save-button").addEventListener("click", async () => {
-    const selection = { font: model.font, character: model.character };
-    const pattern = model.pattern;
-    const previousPattern = model.savedPattern;
-    $("#save-button").disabled = true;
-    try {
-      const saved = await saveGlyphPattern({ ...selection, pattern, previousPattern });
-      model.markGlyphSaved(selection.font, selection.character, saved.pattern);
-      toast(`Saved Font ${selection.font.toUpperCase()} ${selection.character === " " ? "Space" : selection.character}`);
-    } catch (error) { toast(`Couldn’t save glyph: ${error.message}`); }
-    render();
-  });
+  $("#save-button").addEventListener("click", saveAction.run);
+  window.addEventListener("keydown",
+    (event) => handleGlyphSaveShortcut(event, saveAction.run), { capture: true });
   window.addEventListener("beforeunload", (event) => {
-    if (!model.dirtyCount && !appearance.dirty) return;
+    if (!shouldWarnBeforeGlyphUnload({
+      appearanceDirty: appearance.dirty,
+      dirtyCount: model.dirtyCount,
+      pending: saveAction.pending,
+    })) return;
     event.preventDefault();
     event.returnValue = "";
   });

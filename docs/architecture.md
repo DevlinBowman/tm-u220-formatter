@@ -129,16 +129,18 @@ and dispatches it to one of two visual renderers.
 The browser surface models document layout and printer style state, including
 paper width, alignment, color, emphasis, double strike, double dimensions,
 underline, upside-down text, feed motion, and cuts. The default 9-pin renderer
-turns complete, independently authored Font A and Font B ASCII atlases into
-explicit strike plans, then adds overprint passes and deterministic ribbon
-bleed. A per-character browser-backed dotted layer represents only non-ASCII
-glyphs carrying compiler-owned resident page and byte metadata; missing or
-malformed proof fails closed to the modeled `?`. Exact ASCII strikes and the
-resident bytes in the compiled job remain unchanged. The Baseline renderer
-keeps the historical profile-calibrated browser glyphs. Both renderers consume
-the same compiler geometry. Strike geometry is hardware-derived, but the
-manually observed ASCII and browser-backed non-ASCII shapes remain representative;
-the formatter does not contain Epson's resident-ROM bitmaps.
+turns independently authored Font A and Font B ASCII atlases, plus sparse
+byte-keyed page-0 PC437 extensions, into explicit strike plans before adding
+overprint passes and deterministic ribbon bleed. An extended mask is exact only
+when compiler-owned metadata identifies page 0 and its matching resident byte;
+unauthored page-0 slots and every other supported code page retain the
+browser-backed dotted layer. Missing or malformed proof fails closed to the
+modeled `?`. The resident bytes in the compiled job remain unchanged. The
+Baseline renderer keeps the historical profile-calibrated browser glyphs. Both
+renderers consume the same compiler geometry. Strike geometry is
+hardware-derived, but the manually observed ASCII and project-authored extended
+masks remain representative; the formatter does not contain Epson's
+resident-ROM bitmaps.
 
 Horizontal character advance is the resident 7- or 9-position matrix, plus the
 profile's built-in DIP-switch character spacing, plus any added `ESC SP`
@@ -150,12 +152,18 @@ each fixed-radius impact to 2×1 or 1×2 positions; enabling both yields a liter
 2×2 block. This preserves wrapping, justification, tabs, and the visible
 character spacing when no additional spacing is requested.
 
-The checkout-only glyph workspace keeps all 7×9 or 9×9 positions editable. Its
-Font A/B authoring baseline after pin 7 is an explicit reconstruction guide,
-not resident printer data; Epson defines no internal baseline, and the printer's
-matrix-bottom line-alignment edge remains after pin 9. The workspace presents
-built-in character spacing and default line spacing outside the matrix, and
-none of these guides enter a saved glyph mask.
+The checkout-only glyph workspace exposes all 223 PC437 text bytes: printable
+ASCII `20–7E` and extended bytes `80–FF`; controls and `7F` remain printer
+operations. Selection and persistence use page-and-byte identity while Unicode
+is display metadata. Extended slots without a mask are explicitly unauthored and
+the 128-byte range is stored sparsely, so catalog availability alone cannot turn
+a missing bitmap into an exact blank. The workspace keeps all 7×9 or 9×9
+positions editable. Its Font
+A/B authoring baseline after pin 7 is an explicit reconstruction guide, not
+resident printer data; Epson defines no internal baseline, and the printer's
+matrix-bottom line-alignment edge remains after pin 9. Built-in character
+spacing and default line spacing remain outside the matrix, and none of these
+guides enter a saved glyph mask.
 
 The normal 9-pin character cell is 18 vertical units. A marked double-height
 line adds one cell to its configured line spacing, matching physical TM-U220

@@ -381,11 +381,12 @@ and an unclosed table are errors. Table cells never wrap or truncate implicitly.
 The preview uses these exact layout decisions and records style segments and
 line-break reasons. Baseline preserves the earlier calibrated browser glyphs.
 The default 9-pin view adds a deterministic physical strike model. Its authored
-atlases cover ASCII; mapped non-ASCII glyphs carrying compiler-owned resident
-page and byte metadata use a browser-backed dotted representative. Missing or
-malformed proof fails closed to `?` because the application does not contain
-Epson's resident-ROM bitmaps. This visual limitation does not change the
-compiled code-page bytes.
+atlases cover ASCII and may contain sparse project-authored page-0 PC437 masks.
+An extended exact mask requires matching compiler-owned page-0 and resident-byte
+metadata. Unauthored page-0 slots and mapped glyphs from other code pages use a
+browser-backed dotted representative. Missing or malformed proof fails closed
+to `?` because the application does not contain Epson's resident-ROM bitmaps.
+This visual limitation does not change the compiled code-page bytes.
 
 ## Failure behavior
 

@@ -1,21 +1,29 @@
-// Verifies code-page glyphs use a browser-backed layer without disturbing exact ASCII strike cells.
+// Verifies unauthored code-page glyphs use a browser-backed layer without disturbing exact strikes.
+// Synthetic empty coverage keeps fallback assertions independent from masks authored later.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { browserGlyph } from "../preview/classic-font/presentation.js";
 import { previewGlyphLayers } from "../preview/printer-font/glyph-layers.js";
+import {
+  createResidentGlyphLookup,
+} from "../preview/printer-font/resident/atlas.js";
 import { renderStrikeSegment } from "../preview/renderers/strike.js";
 
-test("compiler-addressed glyphs retain aligned cells in both layers", () => {
+const EMPTY_RESIDENT_LOOKUP = createResidentGlyphLookup({
+  a: Object.freeze({}), b: Object.freeze({}),
+});
+
+test("unauthored compiler-addressed glyphs retain aligned fallback cells", () => {
   assert.deepEqual(previewGlyphLayers({
     text: "AéB", code_page: 0, resident_bytes: [0x41, 0x82, 0x42],
-  }), {
+  }, EMPTY_RESIDENT_LOOKUP.hasResidentGlyph), {
     strikeText: "A B",
     fallbackText: " é ",
     hasFallback: true,
   });
   assert.deepEqual(previewGlyphLayers({
     text: "AБB", code_page: 17, resident_bytes: [0x41, 0x81, 0x42],
-  }), {
+  }, EMPTY_RESIDENT_LOOKUP.hasResidentGlyph), {
     strikeText: "A B",
     fallbackText: " Б ",
     hasFallback: true,

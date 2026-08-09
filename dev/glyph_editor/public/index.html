@@ -26,7 +26,7 @@
       <nav class="file-actions" aria-label="Glyph actions">
         <a class="button button-secondary" href="/preview/">Receipt preview</a>
         <button class="button button-secondary" id="revert-button" type="button">Revert draft</button>
-        <button class="button button-primary" id="save-button" type="button">Save glyph</button>
+        <button class="button button-primary" id="save-button" type="button" aria-keyshortcuts="Meta+S Control+S" title="Update selected glyph (Command-S or Ctrl-S)">Update glyph</button>
       </nav>
     </header>
 
@@ -35,7 +35,7 @@
         <header class="panel-header">
           <div class="panel-heading">
             <span class="eyebrow">Preview atlas</span>
-            <h1 id="catalog-title">Printable ASCII</h1>
+            <h1 id="catalog-title">PC437 text glyphs</h1>
           </div>
           <div class="mode-switch" role="group" aria-label="Printer font">
             <button class="mode-button" type="button" data-font="a" aria-pressed="false">Font A</button>
@@ -44,12 +44,12 @@
         </header>
 
         <div class="catalog-body">
-          <p class="scope-note">Select a character, then toggle its strike positions. Dots mark unsaved glyph drafts.</p>
-          <div class="glyph-catalog" id="glyph-catalog" role="listbox" aria-label="Printable ASCII glyphs"></div>
+          <p class="scope-note">Select a page byte, then toggle its strike positions. Dashed cells have no authored mask; dots mark unsaved drafts.</p>
+          <div class="glyph-catalog" id="glyph-catalog" role="listbox" aria-label="PC437 text glyphs grouped by character family"></div>
         </div>
 
         <footer class="panel-footer glyph-catalog-meta">
-          <span>95 preview glyphs</span>
+          <span id="catalog-count">0/223 Font B masks authored</span>
           <span id="draft-count">No drafts</span>
         </footer>
       </section>
@@ -60,7 +60,7 @@
             <span class="eyebrow">Dot structure</span>
             <h2 id="glyph-title">Font B · A</h2>
           </div>
-          <span class="glyph-metrics" id="glyph-metrics">ASCII 65 · 7 half-dot positions × 9 pins</span>
+          <span class="glyph-metrics" id="glyph-metrics">PC437 0x41 · U+0041 · 7 half-dot positions × 9 pins</span>
         </header>
 
         <div class="glyph-editor-body">
@@ -115,7 +115,7 @@
             <label class="study-text-field" for="study-text">
               <span>Comparison text</span>
               <input id="study-text" type="text" value="Street" maxlength="32" autocomplete="off" spellcheck="false" aria-describedby="study-text-help">
-              <small id="study-text-help">Printable ASCII, up to 32 characters. The active glyph is always shown first.</small>
+              <small id="study-text-help">PC437 text characters, up to 32 characters. The active glyph is always shown first.</small>
             </label>
             <div class="paper-study" aria-label="Receipt-style glyph preview">
               <canvas class="glyph-study" id="glyph-study" aria-describedby="study-context"></canvas>
@@ -156,7 +156,7 @@
 
         <footer class="panel-footer glyph-boundary">
           <span id="save-state">Preview atlas unchanged</span>
-          <span>Writes only the selected Font A/B preview mask</span>
+          <span>Updates only the selected Font A/B page-byte mask</span>
         </footer>
       </section>
     </main>

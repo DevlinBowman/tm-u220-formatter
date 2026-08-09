@@ -175,7 +175,9 @@ when the browser grants writable access. The preview cannot print or contact
 the printer.
 
 The default 9-pin view uses separately authored, approximate Font A and Font B
-strike atlases for printable ASCII. A profile-calibrated browser-font baseline
+strike atlases for printable ASCII plus any page-0 PC437 masks authored in the
+checkout-only glyph workspace. Extended slots without an authored mask retain
+the browser-backed representative. A profile-calibrated browser-font baseline
 is available for comparison. Their release provenance is recorded in
 [PROVENANCE.md](docs/PROVENANCE.md).
 

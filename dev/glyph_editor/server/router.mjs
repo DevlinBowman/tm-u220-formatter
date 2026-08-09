@@ -15,7 +15,7 @@ import {
 const GLYPH_FILES = new Set([
   "app.js", "api.js", "appearance-model.js", "appearance.css",
     "catalog.js", "font-guides.js", "geometry.css", "grid.js", "model.js",
-    "preview.js", "study-text.js", "styles.css",
+    "preview.js", "save-action.js", "study-text.js", "styles.css",
 ]);
 
 function sameOrigin(request, origin) {

@@ -26,6 +26,27 @@
 
 .glyph-catalog {
   display: grid;
+  gap: 18px;
+}
+
+.glyph-group { display: grid; gap: 8px; }
+
+.glyph-group-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink-faint);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.glyph-group-heading strong { color: var(--ink-muted); font-weight: 720; }
+.glyph-group-count { font: 9px/1 var(--mono); letter-spacing: 0; text-transform: none; }
+
+.glyph-group-grid {
+  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
   gap: 5px;
 }
@@ -42,7 +63,9 @@
 }
 
 .glyph-button:hover { border-color: var(--line-strong); background: var(--button-hover); color: var(--ink); }
+.glyph-button[data-authored="false"] { border-style: dashed; background: var(--canvas-soft); color: var(--ink-faint); }
 .glyph-button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.glyph-button[data-byte="255"] { font-size: 8px; letter-spacing: -.04em; }
 .glyph-button[data-dirty="true"]::after {
   width: 5px;
   height: 5px;

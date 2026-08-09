@@ -23,8 +23,18 @@ async function main() {
     return;
   }
   const store = new GlyphPatternStore({
-    a: resolve(projectRoot, "web/preview/printer-font/resident/font-a.js"),
-    b: resolve(projectRoot, "web/preview/printer-font/resident/font-b.js"),
+    a: {
+      ascii: resolve(projectRoot,
+        "web/preview/printer-font/resident/font-a.js"),
+      extended: resolve(projectRoot,
+        "web/preview/printer-font/resident/font-a-page-437.js"),
+    },
+    b: {
+      ascii: resolve(projectRoot,
+        "web/preview/printer-font/resident/font-b.js"),
+      extended: resolve(projectRoot,
+        "web/preview/printer-font/resident/font-b-page-437.js"),
+    },
   });
   const appearanceStore = new AppearanceStore(resolve(projectRoot,
     "web/preview/printer-font/appearance.js"));

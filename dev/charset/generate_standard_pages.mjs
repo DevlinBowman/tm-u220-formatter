@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Regenerates the public single-byte page modules from pinned Unicode mapping data.
-// It writes only the project's declared standard catalog and generated specimen.
+// It writes only the declared standard catalog, shared browser descriptor, and specimen.
 import { createHash } from "node:crypto";
 import { readFile, rename, writeFile } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
@@ -11,6 +11,7 @@ const inputRoot = process.argv[2] && resolve(process.argv[2]);
 
 const definitions = Object.freeze([
   { id: 0, name: "PC437", input: "CP437.TXT", output: "page_00_pc437.lua",
+    browserOutput: "web/charset/page-00-pc437.js",
     sha256: "6bad4dabcdf5940227c7d81fab130dcb18a77850b5d79de28b5dc4e047b0aaac" },
   { id: 2, name: "PC850", input: "CP850.TXT", output: "page_02_pc850.lua",
     sha256: "ffdcc3c1c72f1aef600a63547100ef3dc452a09ad84923d382085519751c7479" },
@@ -67,6 +68,50 @@ function renderPage(definition, mapping) {
   return lines.join("\n");
 }
 
+function javascriptString(value) {
+  return JSON.stringify(value)
+    .replaceAll("\u00a0", "\\u00A0")
+    .replaceAll("\u2028", "\\u2028")
+    .replaceAll("\u2029", "\\u2029");
+}
+
+function renderBrowserPage(definition, mapping) {
+  const ranges = [];
+  let current = [];
+  for (let byte = 0x20; byte <= 0xFF; byte += 1) {
+    const codepoint = mapping.get(byte);
+    if (codepoint == null || codepoint < 0x20 || codepoint === 0x7F) continue;
+    if (current.length === 16
+      || (current.length && byte !== current.at(-1).byte + 1)) {
+      ranges.push(current);
+      current = [];
+    }
+    current.push({ byte, character: String.fromCodePoint(codepoint) });
+  }
+  if (current.length) ranges.push(current);
+
+  const lines = [
+    "// Exposes canonical page-0 byte descriptors shared by browser preview and developer tooling.",
+    "// Generated from pinned Unicode mapping data; see THIRD_PARTY_NOTICES.md.",
+    "const PAGE_RANGES = Object.freeze([",
+  ];
+  for (const range of ranges) {
+    const start = range[0].byte.toString(16).toUpperCase().padStart(2, "0");
+    const characters = range.map(({ character }) => character).join("");
+    lines.push(`  Object.freeze([0x${start}, ${javascriptString(characters)}]),`);
+  }
+  lines.push(
+    "]);",
+    "",
+    "export const PC437_TEXT_GLYPHS = Object.freeze(PAGE_RANGES.flatMap(",
+    "  ([start, characters]) => [...characters].map((character, index) =>",
+    `    Object.freeze({ page: ${definition.id}, byte: start + index, character })),`,
+    "));",
+    "",
+  );
+  return lines.join("\n");
+}
+
 function renderSpecimen(loaded) {
   const lines = [
     "!tm-u220 job 1",
@@ -119,6 +164,10 @@ async function main() {
     loaded.push({ definition, mapping });
     await atomicWrite(join(projectRoot, "src/tm_u220/charset/pages", definition.output),
       renderPage(definition, mapping));
+    if (definition.browserOutput) {
+      await atomicWrite(join(projectRoot, definition.browserOutput),
+        renderBrowserPage(definition, mapping));
+    }
   }
   await atomicWrite(join(projectRoot, "examples/chars.txt"), renderSpecimen(loaded));
 }

@@ -1,3 +1,5 @@
+// Converts exact resident glyph masks into deterministic nine-pin strike coordinates.
+// Compiler page and byte metadata select sparse PC437 masks without affecting ASCII.
 import { glyphFor } from "./atlas.js";
 
 const ROW_PITCH_VERTICAL_UNITS = 2;
@@ -23,8 +25,8 @@ export function strikePasses(style = {}) {
   return passes;
 }
 
-function glyphDots(character, font, origin, repeats) {
-  const glyph = glyphFor(font, character);
+function glyphDots(character, font, origin, repeats, address, glyphLookup) {
+  const glyph = glyphLookup(font, character, address);
   const dots = [];
   for (const [row, mask] of glyph.rows.entries()) {
     for (let column = 0; column < glyph.width; column += 1) {
@@ -56,7 +58,7 @@ function underlineRows(segment, style) {
   return [bottom];
 }
 
-export function planSegmentStrikes(segment) {
+export function planSegmentStrikes(segment, glyphLookup = glyphFor) {
   const style = segment.style || {};
   const font = style.font === "a" ? "a" : "b";
   const repeats = {
@@ -64,10 +66,14 @@ export function planSegmentStrikes(segment) {
     y: style.double_height ? 2 : 1,
   };
   const advance = segment.character_advance_half_dots || 10;
+  const residentBytes = segment.resident_bytes;
   const dots = [];
   for (const [index, character] of [...(segment.text || "")].entries()) {
     if (character !== " ") {
-      dots.push(...glyphDots(character, font, index * advance, repeats));
+      dots.push(...glyphDots(character, font, index * advance, repeats, {
+        page: segment.code_page,
+        byte: residentBytes?.[index],
+      }, glyphLookup));
     }
   }
   return {

@@ -65,6 +65,7 @@ test("glyph and receipt pages link to each other on one origin", async () => {
   assert.match(preview.body, /src="\.\/app\.js"/);
   assert.equal((await invoke(handle, "/glyphs/geometry.css")).status, 200);
   assert.equal((await invoke(handle, "/glyphs/font-guides.js")).status, 200);
+  assert.equal((await invoke(handle, "/glyphs/save-action.js")).status, 200);
   assert.equal((await invoke(handle, "/glyphs/study-text.js")).status, 200);
 });
 
