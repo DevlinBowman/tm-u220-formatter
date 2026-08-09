@@ -59,6 +59,11 @@ receives only finished text or native U220 source.
   per-user aliases and profile paths according to release mode.
 - `spec` owns immutable TM-U220 model facts, effective profiles, and supported
   command definitions.
+- `printhead` owns format-neutral grayscale and one-bit rasters, strict PBM and
+  image-profile codecs, fitting/dithering policy, hardware density constraints,
+  and conversion into eight-row TM-U220 bit-image bands. It has no dependency
+  on job parsing, filesystem paths, receipt formatting, preview presentation,
+  or transport.
 - `format` owns text state, hard wrapping, tabs, rules, key/value and tabular
   layout, preview-line construction, and the physical paper-motion plan.
 - `escpos` owns atomic byte encoding and strict byte-stream parsing.

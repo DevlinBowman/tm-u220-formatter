@@ -115,6 +115,7 @@ diagnostic.
 @feed-units 0..255
 @reverse-lines 0..255
 @reverse-units 0..255
+@image PATH [WIDTH HEIGHT]
 @rule PATTERN
 @kv LEFT | RIGHT
 @table [L|R,]WIDTH[CONTENT][GROUP][,...]
@@ -222,8 +223,9 @@ An ordinary pipe remains text in `@text A | B`, and `@rule |` still prints a
 pipe divider. Inside `@text`, a pipe followed by optional horizontal whitespace
 and an `@directive` begins the next directive. Escape that pipe as `\|` to emit
 the reserved text literally:
-`@text A \| @font b` emits `A | @font b`. `@kv`, `@table`, `@head`, `@row`, and
-`@end-table` each own their complete source line and cannot be sequence members.
+`@text A \| @font b` emits `A | @font b`. `@image`, `@kv`, `@table`, `@head`,
+`@row`, and `@end-table` each own their complete source line and cannot be
+sequence members.
 The pipes in `@kv`, `@head`, and `@row` remain field separators. A sequence runs
 from left to right exactly like its directives on separate source lines. An
 invalid member rejects the whole source line. Every normal placement, ordering,
@@ -243,6 +245,7 @@ The following operations are accepted only at the beginning of a printer line:
 - `@align`
 - `@color`
 - `@upside-down`
+- `@image`
 - `@rule`
 - `@kv`
 - `@table`
@@ -272,6 +275,40 @@ after reaching the cutter position; its default is zero.
 no arguments, may appear only once, and must be the final job operation. Use
 plain `@cut` when the fixed four-line finish margin is not wanted. Preview
 reports the four lines, advance to cutter position, and installed cut shape.
+
+## Printhead images
+
+`@image` places a PBM or PNG companion file without converting it to text:
+
+```text
+@image art/logo.pbm
+@image "art/chicken portrait.png" 20 10
+@image art/banner.png page auto
+```
+
+Paths are relative to the file-backed job. Absolute paths, traversal, links,
+and URLs are rejected. In an explicit inline CLI job, paths are relative to the
+directory where `220` was invoked; standard input has no image base. A path
+without whitespace may be unquoted. Double-quoted paths escape only `\"` and
+`\\`. The optional box must provide both values: width is `page` or 1..255
+current character cells; height is `auto` or 1..255 current character cells.
+Current font, spacing, double-width, and double-height state determine those
+cell measurements. Alignment positions the complete image box and color selects
+the black or red ribbon.
+
+The active versioned image profile controls omitted dimensions, contain/cover/
+stretch fitting, nearest/area/bilinear resampling, threshold/ordered/Floyd
+dithering, inversion, solid/detail density, unidirectional band registration,
+and the trailing paper gap. Its checked-in default is
+[`config/images/default.u220i`](../config/images/default.u220i). Solid mode is
+80 x 72 dpi. Detail mode is 160 x 72 dpi and the interpreter prevents adjacent
+horizontal strikes required by the TM-U220 hardware.
+
+Strict binary PBM (`P4`) and non-interlaced 8-bit PNG are accepted. JPEG is not
+yet supported. A PBM or PNG path may also be passed directly to `check`,
+`render`, `compile`, `preview`, or `print`; it becomes a one-image job using
+profile defaults. Direct image preview is read-only and paints the exact final
+printer-dot mask.
 
 ## Text and wrapping
 

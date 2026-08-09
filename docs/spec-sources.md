@@ -10,8 +10,11 @@ and generation details are recorded in [provenance](PROVENANCE.md).
 - [ESC `SP` - Set right-side character spacing](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_space.html)
 - [ESC `!` - Select print modes](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_exclamation.html)
 - [ESC `&` - Define user-defined characters](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_ampersand.html)
+- [ESC `*` - Select bit-image mode](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_asterisk.html)
 - [ESC `-` - Turn underline mode on/off](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_minus.html)
 - [ESC `3` - Set line spacing](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_3.html)
+- [ESC `J` - Print and feed paper](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_cj.html)
+- [ESC `U` - Turn unidirectional print mode on/off](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_cu.html)
 - [ESC `a` - Select justification](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_la.html)
 - [ESC `{` — Turn upside-down print mode on/off](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/esc_lbrace.html)
 - [GS I — Transmit printer ID](https://download4.epson.biz/sec_pubs/pos/reference_en/escpos/gs_ci.html)
@@ -36,6 +39,12 @@ and generation details are recorded in [provenance](PROVENANCE.md).
 - Default line spacing is 1/6 inch. Paper-feed commands use 1/144-inch units.
 - Horizontal positioning uses 1/160-inch half-dot units. The nine physical pin
   rows are spaced at 1/72 inch, or two vertical motion units.
+- `ESC *` exposes the TM-U220 printhead as eight-row column data. Mode 0 prints
+  at 80 x 72 dpi and permits adjacent horizontal dots; mode 1 prints at
+  160 x 72 dpi and prohibits them. Depending on paper width and DIP 2-1, the
+  maximum supported row width is 148-200 dots in mode 0 or 297-400 dots in
+  mode 1. Multi-band calibration uses `ESC U` to compare bidirectional and
+  unidirectional registration.
 - TM-U220 user-defined character rows cannot print horizontally adjoining
   positions. That command restriction does not describe the resident ROM:
   magnified observations of project-authored physical printouts show resident

@@ -41,8 +41,9 @@ appropriate for their machine and network.
 - Deterministic layout for TM-U220 Type A, B, and D profiles
 - Exact ESC/POS output with atomic failure: invalid jobs emit no printer bytes
 - UTF-8 input mapped through a redistributable standard code-page catalog
-- Plain text plus native alignment, font, emphasis, color, table, feed, and cut
-  directives
+- Plain text plus native alignment, font, emphasis, color, table, image, feed,
+  and cut directives
+- Direct PBM/PNG printing with profile-driven sizing, resampling, and dithering
 - Fast whole-job LPD printing, optional checkpointed live printing, and an
   advanced one-shot RAW TCP transport
 - Strict inspection, device-query decoding, and per-machine printing policy
@@ -151,6 +152,41 @@ Common authoring commands are:
 220 compile receipt.u220 -o receipt.bin
 220 preview receipt.u220
 ```
+
+Images can be a complete input or a companion inside a receipt:
+
+```sh
+220 preview art/chicken.png
+220 render art/chicken.png
+220 print art/chicken.png
+```
+
+For example, `receipt.u220` may contain:
+
+```u220
+@image "art/chicken.png" 20 10
+```
+
+Then preview or print that receipt normally:
+
+```sh
+220 preview receipt.u220
+220 print receipt.u220
+```
+
+For a one-line formatted job, image paths are relative to the directory where
+`220` is invoked:
+
+```sh
+220 print '@image "art/chicken.png" 20 10'
+```
+
+`@image` is job-language syntax, not a shell command or a `220` subcommand.
+
+The versioned image profile edited by `220 config` controls default size, fit,
+resampling, dithering, density, inversion, registration, and trailing spacing.
+See the [printhead image guide](docs/printhead-images.md). JPEG decoding is not
+yet included.
 
 Use `--text` for guaranteed literal input and `--ftext` or
 `--formatted-text` for an interpreted string. With no input argument, `check`,
@@ -290,6 +326,7 @@ write, read, and change as plain text.
 - [Printing policy and security](docs/printing-policy.md)
 - [Why authorization precedes device checking](docs/printing-authorization-rationale.md)
 - [Printer settings discovery](docs/printer-settings.md)
+- [Printhead image pipeline](docs/printhead-images.md)
 - [Local LPD printing](docs/lpd-printing.md)
 - [Checkpointed live printing](docs/live-printing.md)
 - [Advanced RAW TCP printing](docs/raw-tcp-printing.md)
