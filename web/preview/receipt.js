@@ -25,8 +25,14 @@ function profileDetails(profile) {
 }
 
 export function accessibleLineLabel(line) {
+  const bitImage = line?.segments?.find((segment) => segment.kind === "bit_image");
+  if (line?.kind === "image" || bitImage) {
+    const label = line?.image_label || line?.label || bitImage?.label || bitImage?.reference;
+    return label ? `printer image: ${label}` : "printer bit image";
+  }
   const text = typeof line?.text === "string" ? line.text : "";
-  return text.trim() ? text : "blank printer line";
+  if (text.trim()) return text;
+  return "blank printer line";
 }
 
 function lineNode(line, geometry, profile, sourceOffset, previewFont) {

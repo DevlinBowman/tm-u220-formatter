@@ -59,6 +59,13 @@ local function finish_line(finish)
 end
 
 function M.format_line(index, line)
+    if line.kind == "image" then
+        local segment = line.segments and line.segments[1] or {}
+        return string.format("%03d | [image %s, %dx%d dots, %s]%s", index,
+            tostring(line.image_label or "image"), segment.mask_width_dots or 0,
+            segment.mask_height_dots or 0, tostring(line.image_density or "solid"),
+            markers(line))
+    end
     return string.format("%03d | %s%s", index, line.text, markers(line))
 end
 

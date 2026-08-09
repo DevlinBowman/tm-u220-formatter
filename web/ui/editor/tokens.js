@@ -2,7 +2,7 @@
 // Line-owning directives keep their pipes as data instead of pipeline separators.
 const FIRST_DIRECTIVE = /^([ \t]*)(@[a-z][a-z-]*)/;
 const LINE_OWNING_DIRECTIVES = new Set([
-  "@kv", "@table", "@head", "@row", "@end-table",
+  "@image", "@kv", "@table", "@head", "@row", "@end-table",
 ]);
 
 function addSpan(spans, kind, start, end, base) {

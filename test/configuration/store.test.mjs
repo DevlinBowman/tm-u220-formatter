@@ -17,12 +17,15 @@ function fixture(userOwned = true) {
   const userRoot = path.join(base, "user-config");
   const aliasTemplate = "@bold => @text bold\n";
   const profileTemplate = "columns = 80\n";
+  const imageProfileTemplate = "density = solid\n";
   fs.mkdirSync(path.join(root, "config/directives"), { recursive: true, mode: 0o700 });
   fs.mkdirSync(path.join(root, "config/printers"), { recursive: true, mode: 0o700 });
+  fs.mkdirSync(path.join(root, "config/images"), { recursive: true, mode: 0o700 });
   fs.writeFileSync(path.join(root, "config/directives/aliases.u220a"), aliasTemplate);
   fs.writeFileSync(path.join(root, "config/printers/local.u220p"), profileTemplate);
+  fs.writeFileSync(path.join(root, "config/images/default.u220i"), imageProfileTemplate);
   const files = configurationFiles(root, { TM_U220_CONFIG_HOME: userRoot }, userOwned);
-  return { base, files, userRoot, aliasTemplate, profileTemplate };
+  return { base, files, userRoot, aliasTemplate, profileTemplate, imageProfileTemplate };
 }
 
 function removeFixture(item) {
@@ -37,6 +40,7 @@ test("seeds missing user files byte-for-byte with private permissions", () => {
     assert.deepEqual(prepared, item.files.map((file) => file.path));
     assert.equal(fs.readFileSync(item.files[0].path, "utf8"), item.aliasTemplate);
     assert.equal(fs.readFileSync(item.files[1].path, "utf8"), item.profileTemplate);
+    assert.equal(fs.readFileSync(item.files[2].path, "utf8"), item.imageProfileTemplate);
     for (const file of item.files) {
       assert.equal(fs.lstatSync(file.path).mode & 0o077, 0);
       assert.equal(fs.lstatSync(file.path).nlink, 1);

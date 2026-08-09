@@ -106,6 +106,7 @@ tests[#tests + 1] = { "preview delegates only to the browser editor launcher", f
     check.equal(call.options.string_input, nil)
     check.equal(call.options.alias_path, "/user/aliases")
     check.equal(call.options.profile_path, "/user/profile")
+    check.equal(call.options.image_profile_path, "/user/image_profile")
 end }
 
 tests[#tests + 1] = { "developer glyphs delegates only to its checkout launcher", function()
@@ -174,6 +175,7 @@ tests[#tests + 1] = { "print entry point preserves explicit literal text", funct
     check.equal(call.options.delivery, "batch")
     check.equal(call.options.transport, "lpd")
     check.equal(call.options.host, "192.168.50.41")
+    check.equal(call.options.asset_root, ".")
     check.equal(table.concat(output), "queued\n")
 end }
 
@@ -196,6 +198,7 @@ tests[#tests + 1] = { "print entry point preserves formatted string input", func
     check.equal(status, 0)
     check.equal(call.input, "@emphasis on\nStyled")
     check.equal(call.options.string_input, "formatted")
+    check.equal(call.options.asset_root, ".")
 end }
 
 tests[#tests + 1] = { "print entry point delegates implicit standard input", function()
@@ -219,6 +222,7 @@ tests[#tests + 1] = { "print entry point delegates implicit standard input", fun
     check.equal(call.options.string_input, nil)
     check.equal(call.options.delivery, "batch")
     check.equal(call.options.transport, "lpd")
+    check.equal(call.options.asset_root, nil)
 end }
 
 tests[#tests + 1] = { "explicit live mode supports silence and cancellation", function()

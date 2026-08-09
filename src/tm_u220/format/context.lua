@@ -158,6 +158,36 @@ function Context:print_motion(id, args, reason, span)
     })
 end
 
+function Context:add_image_preview(image, span)
+    return self.paper_plan:add_image(
+        image, self.state, self.state.justification, span)
+end
+
+function Context:begin_printhead_output()
+    self:restore_default_code_table()
+end
+
+function Context:printhead_feed(vertical_units, reason, span, preview_line_index)
+    local node_index = self:command("print.feed_units", {
+        vertical_units = vertical_units,
+    })
+    self:move_paper(vertical_units, reason, span)
+    state_api.line_feed(self.state)
+    self:add_print_boundary({
+        kind = "motion",
+        command_id = "print.feed_units",
+        after_node_index = node_index,
+        preview_line_index = preview_line_index,
+        reason = reason,
+        source_span = span,
+    })
+end
+
+function Context:printhead_band(arguments, vertical_units, reason, span, preview_line_index)
+    self:command("printhead.bit_image", arguments)
+    self:printhead_feed(vertical_units, reason, span, preview_line_index)
+end
+
 function Context:cut(args, shape, span)
     self:restore_default_code_table()
     local node_index = self:command("mechanism.cut", args)

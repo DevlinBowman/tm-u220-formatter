@@ -1,0 +1,11 @@
+!tm-u220 image-profile 1
+density=solid
+fit=contain
+resample=nearest
+dither=threshold
+threshold=128
+invert=off
+unidirectional=on
+trailing_gap_vertical_units=4
+default_width_cells=page
+default_height_cells=auto

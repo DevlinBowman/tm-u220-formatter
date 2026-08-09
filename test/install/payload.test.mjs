@@ -24,7 +24,8 @@ test("the allowlist exactly covers shipped domains and excludes development test
     "CONTRIBUTING.md", "LICENSE", "NOTICE", "README.md", "SECURITY.md",
     "THIRD_PARTY_NOTICES.md", "VERSION",
     "bin/tm-u220", "bin/tm-u220.lua",
-    "config/directives/aliases.u220a", "config/printers/local.u220p",
+    "config/directives/aliases.u220a", "config/images/default.u220i",
+    "config/printers/local.u220p",
   ].sort();
   const listed = DISTRIBUTION_PAYLOAD.map((entry) => entry.path).sort();
   assert.deepEqual(listed, wanted);

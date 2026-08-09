@@ -9,6 +9,9 @@ export const CONFIGURATION_FILES = Object.freeze([
   Object.freeze({ name: "profile", label: "authoring printer profile",
     factoryRelative: "config/printers/local.u220p",
     userRelative: "printers/local.u220p" }),
+  Object.freeze({ name: "image_profile", label: "image interpretation profile",
+    factoryRelative: "config/images/default.u220i",
+    userRelative: "images/default.u220i" }),
 ]);
 
 function absoluteEnvironmentPath(value, name) {

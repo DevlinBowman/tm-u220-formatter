@@ -13,11 +13,16 @@ local M = {}
 local function authoring_options(parsed, runtime)
     local options = {}
     for name, value in pairs(parsed.options) do options[name] = value end
+    if parsed.input ~= "-" then options.asset_root = "." end
     local files = runtime.config_files or ConfigFiles
     local facts = runtime.config_files_runtime
     local failure
     options.alias_path, failure = files.active_path("aliases", facts)
     if not options.alias_path then
+        return nil, Diagnostics.new("AUTHORING_CONFIG_PATH_INVALID", failure)
+    end
+    options.image_profile_path, failure = files.active_path("image_profile", facts)
+    if not options.image_profile_path then
         return nil, Diagnostics.new("AUTHORING_CONFIG_PATH_INVALID", failure)
     end
     local local_route = options.delivery == "live" or options.transport == "lpd"

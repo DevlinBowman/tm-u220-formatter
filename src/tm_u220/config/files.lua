@@ -9,6 +9,9 @@ local DEFINITIONS = {
     { name = "profile", label = "authoring printer profile",
         factory_relative = "config/printers/local.u220p",
         user_relative = "printers/local.u220p" },
+    { name = "image_profile", label = "image interpretation profile",
+        factory_relative = "config/images/default.u220i",
+        user_relative = "images/default.u220i" },
 }
 
 local BY_NAME = {}

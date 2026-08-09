@@ -1,4 +1,7 @@
+// Places compiler-owned preview segments and delegates each segment to its domain renderer.
+// Text font selection never changes the physical geometry supplied by the compiler.
 import { normalizePreviewFont } from "./font-mode.js";
+import { renderBitImageSegment } from "./printhead/bit-image.js";
 import { renderClassicSegment } from "./renderers/classic.js";
 import { renderStrikeSegment } from "./renderers/strike.js";
 
@@ -45,7 +48,10 @@ export function createSegmentNode(
   addClass(node, "is-underlined", !segment.preview_only
     && style.underline && style.underline !== "off");
 
-  if (normalizePreviewFont(previewFont) === "strike") {
+  if (segment.kind === "bit_image") {
+    node.classList.add("is-bit-image");
+    renderBitImageSegment(node, segment, geometry);
+  } else if (normalizePreviewFont(previewFont) === "strike") {
     renderStrikeSegment(node, segment, geometry, profile, style);
   } else {
     renderClassicSegment(node, segment, geometry, profile, style);

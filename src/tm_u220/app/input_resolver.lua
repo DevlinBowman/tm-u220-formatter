@@ -3,6 +3,7 @@ local Diagnostics = require("tm_u220.core.diagnostics")
 local Defaults = require("tm_u220.app.local_defaults")
 local DocumentText = require("tm_u220.core.document_text")
 local Fs = require("tm_u220.core.fs")
+local ImageInput = require("tm_u220.app.image_input")
 local StringInput = require("tm_u220.app.string_input")
 
 local M = {}
@@ -110,8 +111,20 @@ function M.resolve(value, options)
     if not mode then return nil, failure("INPUT_STRING_TYPE_INVALID", mode_error) end
     if explicit then return resolve_content(value, nil, mode, options) end
 
-    local content, read_error = Fs.read(value, false)
-    if content ~= nil then return resolve_content(content, value, mode, options) end
+    local content, read_error = Fs.read(value, true)
+    if content ~= nil then
+        local image_format = value ~= "-" and ImageInput.detect(content)
+        if image_format then
+            return {
+                input_kind = "image",
+                image_format = image_format,
+                image_reference = ImageInput.reference(value),
+                path = value,
+                profile_path = options.profile_path or Defaults.profile_path(),
+            }
+        end
+        return resolve_content(content, value, mode, options)
+    end
     if looks_like_path(value) then
         local code = looks_like_job_path(value)
             and "INPUT_JOB_READ_FAILED" or "INPUT_FILE_READ_FAILED"

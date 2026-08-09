@@ -22,8 +22,11 @@ local function compile_options(options)
         alias_path = options.alias_path,
         profile = options.profile,
         profile_path = options.profile_path,
+        image_profile = options.image_profile,
+        image_profile_path = options.image_profile_path,
         string_input = options.string_input,
         text = options.text,
+        asset_root = options.asset_root,
     }
 end
 

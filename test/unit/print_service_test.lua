@@ -18,7 +18,9 @@ tests[#tests + 1] = { "print service accepts resolved literal input", function()
     local result = PrintService.print("hello printer", {
         alias_path = "/user/directives/aliases.u220a",
         profile_path = "/user/printers/local.u220p",
+        image_profile_path = "/user/images/default.u220i",
         string_input = "raw",
+        asset_root = ".",
     }, {
         job_service = jobs, transport = transport,
     })
@@ -28,7 +30,10 @@ tests[#tests + 1] = { "print service accepts resolved literal input", function()
         "/user/directives/aliases.u220a")
     check.equal(compiled_with.options.profile_path,
         "/user/printers/local.u220p")
+    check.equal(compiled_with.options.image_profile_path,
+        "/user/images/default.u220i")
     check.equal(compiled_with.options.string_input, "raw")
+    check.equal(compiled_with.options.asset_root, ".")
     check.equal(submitted, "PRINT")
 end }
 
@@ -88,6 +93,7 @@ tests[#tests + 1] = { "print service submits only exact compiled bytes", functio
     local result = PrintService.print("receipt.u220", {
         host = "printer.local",
         profile_path = "printer.u220p",
+        image_profile_path = "image.u220i",
         queue = "lp",
         timeout = 7,
         source_ports = { 1023 },
@@ -100,6 +106,7 @@ tests[#tests + 1] = { "print service submits only exact compiled bytes", functio
     check.equal(#result.diagnostics, 0)
     check.equal(compile_call.path, "receipt.u220")
     check.equal(compile_call.options.profile_path, "printer.u220p")
+    check.equal(compile_call.options.image_profile_path, "image.u220i")
     check.equal(transport_call.bytes, payload)
     check.equal(transport_call.endpoint.host, "printer.local")
     check.equal(transport_call.options.timeout, 7)

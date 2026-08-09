@@ -52,6 +52,12 @@ test("maps a managed release to user files without changing factory paths", () =
       editablePath: "/Users/example/.config/tm-u220-test/printers/local.u220p",
       userOwned: true,
     },
+    {
+      name: "image_profile",
+      factoryPath: `${root}/config/images/default.u220i`,
+      editablePath: "/Users/example/.config/tm-u220-test/images/default.u220i",
+      userOwned: true,
+    },
   ]);
 });
 

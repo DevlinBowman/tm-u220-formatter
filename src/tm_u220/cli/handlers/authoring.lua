@@ -24,9 +24,15 @@ local function configuration(runtime)
     if not profile then
         return nil, Diagnostics.new("AUTHORING_CONFIG_PATH_INVALID", failure)
     end
+    local image_profile
+    image_profile, failure = files.active_path("image_profile", facts)
+    if not image_profile then
+        return nil, Diagnostics.new("AUTHORING_CONFIG_PATH_INVALID", failure)
+    end
     return {
         aliases = aliases,
         profile = profile,
+        image_profile = image_profile,
     }
 end
 
@@ -37,7 +43,9 @@ local function compile_result(parsed, runtime)
     return service.compile_input(parsed.input, {
         alias_path = config.aliases,
         profile_path = parsed.options.profile_path or config.profile,
+        image_profile_path = config.image_profile,
         string_input = parsed.options.string_input,
+        asset_root = parsed.input ~= "-" and "." or nil,
     })
 end
 
@@ -90,6 +98,7 @@ local function preview_command(parsed, runtime, output)
         alias_path = config.aliases,
         string_input = parsed.options.string_input,
         profile_path = parsed.options.profile_path or config.profile,
+        image_profile_path = config.image_profile,
     }, runtime.editor_runtime)
 end
 

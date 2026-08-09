@@ -2,6 +2,7 @@
 -- Downstream job operations therefore remain independent of authoring aliases.
 local Aliases = require("tm_u220.job.directive.aliases")
 local Chain = require("tm_u220.job.directive.chain")
+local Image = require("tm_u220.job.directive.image")
 local Scalar = require("tm_u220.job.directive.scalar")
 local Finish = require("tm_u220.job.directive.finish")
 local Structured = require("tm_u220.job.directive.structured")
@@ -9,7 +10,7 @@ local Tabular = require("tm_u220.job.directive.tabular")
 local Syntax = require("tm_u220.job.directive.syntax")
 
 local M = {}
-local PARSERS = { Scalar, Finish, Tabular, Structured }
+local PARSERS = { Scalar, Image, Finish, Tabular, Structured }
 
 function M.is_canonical(name)
     for _, parser in ipairs(PARSERS) do
@@ -41,6 +42,9 @@ end
 
 local function parse_canonical(name, arguments, span)
     local operation, failure, handled = Scalar.parse(name, arguments, span)
+    if handled then return operation, failure end
+
+    operation, failure, handled = Image.parse(name, arguments, span)
     if handled then return operation, failure end
 
     operation, failure, handled = Finish.parse(name, arguments, span)

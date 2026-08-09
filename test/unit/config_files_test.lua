@@ -20,6 +20,8 @@ tests[#tests + 1] = { "checkout configuration edits and loads checked-in files",
     check.equal(editable[1].path, "/work/tm-u220/config/directives/aliases.u220a")
     check.equal(editable[2].name, "profile")
     check.equal(editable[2].path, "/work/tm-u220/config/printers/local.u220p")
+    check.equal(editable[3].name, "image_profile")
+    check.equal(editable[3].path, "/work/tm-u220/config/images/default.u220i")
     check.equal(editable[1].user_owned, false)
     check.equal(Files.active_path("profile", runtime), editable[2].path)
 end }
@@ -36,6 +38,8 @@ tests[#tests + 1] = { "managed releases prefer existing XDG user configuration",
     check.equal(editable[1].path, alias_path)
     check.equal(editable[2].path,
         "/users/operator/config/tm-u220/printers/local.u220p")
+    check.equal(editable[3].path,
+        "/users/operator/config/tm-u220/images/default.u220i")
     check.equal(editable[1].user_owned, true)
     check.equal(Files.active_path("aliases", runtime), alias_path)
     check.equal(Files.active_path("profile", runtime),

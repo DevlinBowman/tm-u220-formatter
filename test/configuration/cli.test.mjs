@@ -16,8 +16,10 @@ function fixture(managed = false) {
   const userRoot = path.join(base, "user-config");
   fs.mkdirSync(path.join(root, "config/directives"), { recursive: true, mode: 0o700 });
   fs.mkdirSync(path.join(root, "config/printers"), { recursive: true, mode: 0o700 });
+  fs.mkdirSync(path.join(root, "config/images"), { recursive: true, mode: 0o700 });
   fs.writeFileSync(path.join(root, "config/directives/aliases.u220a"), "@b => @text bold\n");
   fs.writeFileSync(path.join(root, "config/printers/local.u220p"), "columns = 80\n");
+  fs.writeFileSync(path.join(root, "config/images/default.u220i"), "density = solid\n");
   if (managed) fs.writeFileSync(path.join(root, ".tm-u220-install.json"), "{}\n");
   else fs.mkdirSync(path.join(root, ".git"));
   return { base, root, userRoot };
@@ -69,6 +71,7 @@ test("opens checked-in configuration directly for a source checkout", () => {
       "-p", "--",
       path.join(item.root, "config/directives/aliases.u220a"),
       path.join(item.root, "config/printers/local.u220p"),
+      path.join(item.root, "config/images/default.u220i"),
     ]);
     assert.equal(invocation.spawnOptions.shell, false);
     assert.equal(fs.existsSync(item.userRoot), false);
@@ -103,10 +106,12 @@ test("seeds and opens user copies for a managed release", () => {
     }));
     const aliasPath = path.join(item.userRoot, "directives/aliases.u220a");
     const profilePath = path.join(item.userRoot, "printers/local.u220p");
+    const imageProfilePath = path.join(item.userRoot, "images/default.u220i");
     assert.equal(status, 0);
-    assert.deepEqual(invocation.args, ["-p", "--", aliasPath, profilePath]);
+    assert.deepEqual(invocation.args, ["-p", "--", aliasPath, profilePath, imageProfilePath]);
     assert.equal(fs.readFileSync(aliasPath, "utf8"), aliasTemplate);
     assert.equal(fs.readFileSync(profilePath, "utf8"), "columns = 80\n");
+    assert.equal(fs.readFileSync(imageProfilePath, "utf8"), "density = solid\n");
     assert.equal(fs.readFileSync(
       path.join(item.root, "config/directives/aliases.u220a"), "utf8"), aliasTemplate);
   } finally { fs.rmSync(item.base, { recursive: true, force: true }); }

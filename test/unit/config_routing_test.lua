@@ -7,6 +7,7 @@ local tests = {}
 
 local USER_ALIASES = "/user/directives/aliases.u220a"
 local USER_PROFILE = "/user/printers/local.u220p"
+local USER_IMAGE_PROFILE = "/user/images/default.u220i"
 local POLICY_PROFILE = "/private/etc/tm-u220/printer.u220p"
 local POLICY = {
     profile_path = POLICY_PROFILE,
@@ -20,7 +21,9 @@ local POLICY = {
 
 local function config_files()
     return { active_path = function(name)
-        return name == "aliases" and USER_ALIASES or USER_PROFILE
+        if name == "aliases" then return USER_ALIASES end
+        if name == "profile" then return USER_PROFILE end
+        return USER_IMAGE_PROFILE
     end }
 end
 
@@ -47,6 +50,7 @@ tests[#tests + 1] = { "preview keeps user aliases when an explicit profile wins"
     check.equal(status, 0)
     check.equal(received.alias_path, USER_ALIASES)
     check.equal(received.profile_path, "/explicit/profile.u220p")
+    check.equal(received.image_profile_path, USER_IMAGE_PROFILE)
 end }
 
 tests[#tests + 1] = { "advanced raw printing uses user authoring configuration", function()
@@ -69,6 +73,7 @@ tests[#tests + 1] = { "advanced raw printing uses user authoring configuration",
     check.equal(status, 0)
     check.equal(submitted_options.alias_path, USER_ALIASES)
     check.equal(submitted_options.profile_path, USER_PROFILE)
+    check.equal(submitted_options.image_profile_path, USER_IMAGE_PROFILE)
 end }
 
 tests[#tests + 1] = { "managed printing keeps aliases but uses installed profile policy", function()
@@ -86,6 +91,7 @@ tests[#tests + 1] = { "managed printing keeps aliases but uses installed profile
     check.equal(status, 0)
     check.equal(submitted_options.alias_path, USER_ALIASES)
     check.equal(submitted_options.profile_path, POLICY_PROFILE)
+    check.equal(submitted_options.image_profile_path, USER_IMAGE_PROFILE)
     check.equal(submitted_options.printing_policy, POLICY)
 end }
 

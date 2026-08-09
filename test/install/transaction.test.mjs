@@ -240,6 +240,8 @@ test("the complete installed 220 wrapper resolves its own release", { timeout: 3
       configRoot, "directives/aliases.u220a")), true);
     assert.equal(fs.existsSync(path.join(
       configRoot, "printers/local.u220p")), true);
+    assert.equal(fs.existsSync(path.join(
+      configRoot, "images/default.u220i")), true);
     assert.equal(inspectInstallation(prefix).healthy, true);
     const version = spawnSync(result.managerLauncher, ["version"],
       { encoding: "utf8", timeout: 10000 });

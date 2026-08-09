@@ -113,6 +113,50 @@ function Plan:add_tab(before, distance, columns, state, span)
     }
 end
 
+function Plan:add_image(image, state, justification, span)
+    local width = image.mask_width_dots * image.column_step_half_dots
+    local height = image.mask_height_dots * 2
+    local segment = {
+        kind = "bit_image",
+        label = image.label,
+        reference = image.reference,
+        density = image.density,
+        mask_encoding = image.mask_encoding,
+        mask_data = image.mask_data,
+        mask_width_dots = image.mask_width_dots,
+        mask_height_dots = image.mask_height_dots,
+        column_step_half_dots = image.column_step_half_dots,
+        x_half_dots = 0,
+        width_half_dots = width,
+        character_cell_height_vertical_units = height,
+        style = { color = state.color, upside_down = state.upside_down },
+        source_span = span,
+    }
+    local line = {
+        kind = "image",
+        text = "[image " .. tostring(image.label) .. "]",
+        image_label = image.label,
+        image_density = image.density,
+        segments = { segment },
+        justification = justification,
+        reason = "image",
+        source_span = span,
+        y_vertical_units = self.y,
+        content_width_half_dots = width,
+        x_offset_half_dots = justified_offset(self.profile, justification, width),
+        line_spacing_vertical_units = 0,
+        glyph_height_vertical_units = height,
+        line_advance_vertical_units = height,
+    }
+    self.lines[#self.lines + 1] = line
+    self.events[#self.events + 1] = {
+        kind = "line", line_index = #self.lines, y_vertical_units = self.y,
+        source_span = span,
+    }
+    self.max_y = math.max(self.max_y, self.y + height)
+    return #self.lines
+end
+
 function Plan:finish_line(state, justification, reason, include_empty, span)
     if not include_empty and self:empty() then return false end
     local text = {}

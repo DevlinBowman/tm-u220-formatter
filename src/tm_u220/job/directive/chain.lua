@@ -6,11 +6,13 @@ local SEPARATOR = " | @"
 local line_owners = {
     ["end-table"] = true,
     head = true,
+    image = true,
     kv = true,
     row = true,
     table = true,
 }
 local operation_owners = {
+    image = "@image",
     kv = "@kv",
     table_start = "@table",
     table_head = "@head",

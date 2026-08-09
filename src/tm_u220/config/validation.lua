@@ -6,6 +6,7 @@ local Diagnostics = require("tm_u220.core.diagnostics")
 local Directive = require("tm_u220.job.directive")
 local Fs = require("tm_u220.core.fs")
 local ProfileFile = require("tm_u220.profile.file")
+local ImageProfile = require("tm_u220.printhead.image_profile")
 
 local M = {}
 
@@ -65,7 +66,21 @@ function M.check(runtime)
             .. Diagnostics.format(profile.diagnostics[1])
     end
 
-    return { aliases_path = aliases_path, profile_path = profile_path }
+    local image_profile_path
+    image_profile_path, path_failure = effective_path("image_profile", runtime)
+    if not image_profile_path then return nil, path_failure end
+    source, read_failure = Fs.read(image_profile_path, false)
+    if not source then
+        return nil, "image interpretation profile is unreadable: " .. read_failure
+    end
+    local image_profile = ImageProfile.parse(source)
+    if Diagnostics.has_errors(image_profile.diagnostics) then
+        return nil, "image interpretation profile is invalid: "
+            .. Diagnostics.format(image_profile.diagnostics[1])
+    end
+
+    return { aliases_path = aliases_path, profile_path = profile_path,
+        image_profile_path = image_profile_path }
 end
 
 return M

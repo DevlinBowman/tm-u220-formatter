@@ -83,6 +83,11 @@ function Session:validate_horizontal_state(context, operation)
 end
 
 function Session:allows_operation(context, operation)
+    if self.active and operation.kind == "image" then
+        context:add_diagnostic("FORMAT_IMAGE_IN_TABLE",
+            "@image cannot be used inside an active table", operation.span)
+        return false
+    end
     if not self.active or not HORIZONTAL_OPERATIONS[operation.kind] then
         return true
     end

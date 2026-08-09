@@ -36,6 +36,9 @@ Printer-native and job-system directives:
   @reverse-units 0..255
   @cut installed|full|partial [feed=0..255]
     alias: bare @cut -> @cut installed
+  @image PATH [WIDTH HEIGHT]
+    WIDTH = 1..255 character cells or page; HEIGHT = 1..255 cells or auto
+    PATH is relative to the file-backed job; quote paths containing spaces
 
 Formatter-defined utilities:
 
@@ -54,7 +57,8 @@ Formatter-defined utilities:
 
 Alias configuration:
 
-  Run 220 config to edit the active aliases and authoring profile.
+  Run 220 config to edit the active aliases, printer profile, and image
+  interpretation profile.
   Shipped alias defaults: config/directives/aliases.u220a
 ]=]
 
@@ -63,7 +67,7 @@ return {
     list = "220 directives - Valid job directives\n\n" .. REFERENCE .. "\n",
     text = "220 rules directives - Canonical job directives\n\n" .. REFERENCE .. [=[
 
-@init, @align, @color, @upside-down, @rule, @kv, all table directives,
+@init, @align, @color, @upside-down, @image, @rule, @kv, all table directives,
 @fi, and @cut require the beginning of a printer line. @text does not end its
 line; @line does.
 Ordinary source lines include their own line feed. Numbers are decimal integers.
@@ -96,8 +100,8 @@ and another @directive. The canonical separator style is " | @":
 Each directive keeps its @ and runs left to right as though on a separate source
 line. In @text, a pipe before another directive is reserved; write "\|" to emit
 that pipe literally.
-@kv and all four table directives own their source line and cannot be sequence
-members. @kv, @head, and @row keep their pipes as field separators.
+@image, @kv, and all four table directives own their source line and cannot be
+sequence members. @kv, @head, and @row keep their pipes as field separators.
 Placement, ordering, and hardware restrictions still apply to every directive
 in the sequence.
 Size aliases are absolute presets and set both width and height.

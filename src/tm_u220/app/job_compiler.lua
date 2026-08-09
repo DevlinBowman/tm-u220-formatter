@@ -5,6 +5,8 @@ local Context = require("tm_u220.format.context")
 local layout = require("tm_u220.format.layout")
 local commands = require("tm_u220.app.job_commands")
 local finish = require("tm_u220.app.job_finish")
+local JobImages = require("tm_u220.app.job_images")
+local ImageProfile = require("tm_u220.printhead.image_profile")
 local profile_api = require("tm_u220.spec.profile")
 local state_api = require("tm_u220.format.state")
 local TabularSession = require("tm_u220.format.tabular.session")
@@ -61,7 +63,7 @@ local function resolve_profile(document, supplied, found)
     return profile
 end
 
-local function compile_operation(context, tables, operation)
+local function compile_operation(context, tables, operation, image_profile)
     if tables:handle(context, operation) then
         return
     end
@@ -69,7 +71,9 @@ local function compile_operation(context, tables, operation)
         return
     end
 
-    if operation.kind == "text" or operation.kind == "text_line" then
+    if JobImages.handle(context, operation, image_profile) then
+        return
+    elseif operation.kind == "text" or operation.kind == "text_line" then
         context:text(operation.text, operation.span)
         if operation.kind == "text_line" then
             context:line_feed("text_line", operation.span)
@@ -113,9 +117,10 @@ function M.compile(document, options)
 
     local context = Context.new(profile)
     local tables = TabularSession.new()
+    local image_profile = options.image_profile or ImageProfile.defaults()
     context:command("control.initialize")
     for _, operation in ipairs(document.ops or {}) do
-        compile_operation(context, tables, operation)
+        compile_operation(context, tables, operation, image_profile)
     end
     tables:finish(context)
     if not state_api.at_beginning(context.state) then
