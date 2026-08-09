@@ -83,7 +83,7 @@ test("native strikes use horizontal half-dot and vertical motion-unit coordinate
   const fontB = planSegmentStrikes(segment({ font: "b" }, "["));
   const firstRow = fontB.dots.filter((dot) => dot.yVerticalUnits === 1)
     .map((dot) => dot.xHalfDots);
-  assert.deepEqual(firstRow, [1.5, 3.5]);
+  assert.deepEqual(firstRow, [1.5, 3.5, 5.5]);
   assert.equal(fontB.dots.every((dot) => dot.xHalfDots % 1 === 0.5), true);
   assert.equal(fontB.dots.every((dot) => dot.yVerticalUnits % 2 === 1), true);
 });
