@@ -85,6 +85,8 @@ export const NODE_PAYLOAD = Object.freeze([
   { path: "web/package.json", mode: 0o644 },
   { path: "web/io/browser-files.js", mode: 0o644 },
   { path: "web/io/session.js", mode: 0o644 },
+  { path: "web/orchestration/file-actions.js", mode: 0o644 },
+  { path: "web/orchestration/preview-refresh.js", mode: 0o644 },
   { path: "web/orchestration/scroll-sync.js", mode: 0o644 },
   { path: "web/preview/classic-font/dot-plan.js", mode: 0o644 },
   { path: "web/preview/classic-font/lattice.js", mode: 0o644 },

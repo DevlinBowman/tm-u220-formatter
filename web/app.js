@@ -1,5 +1,14 @@
+// Orchestrates the source editor, receipt view, file actions, and live preview controllers.
+// Domain modules own compilation, persistence, rendering, and interaction-specific state.
 import { openBrowserFile, saveBrowserCopy, writeBrowserFile } from "./io/browser-files.js";
-import { hasHttpSession, loadSession, saveSession } from "./io/session.js";
+import { loadSession, saveSession } from "./io/session.js";
+import {
+  applySaveOutcome,
+  createExclusiveSave,
+  handleSaveShortcut,
+  saveCurrentDocument,
+} from "./orchestration/file-actions.js";
+import { createPreviewRefresh } from "./orchestration/preview-refresh.js";
 import { compilePreview, PreviewUnavailableError } from "./preview/client.js";
 import { createDiagnosticsView } from "./preview/diagnostics.js";
 import { createPreviewFontPreference } from "./ui/preview/font-preference.js";
@@ -34,7 +43,8 @@ const linkedScroll = createLinkedScroll({
 });
 receipt.onLayout(linkedScroll.refresh);
 const renderDiagnostics = createDiagnosticsView($("#diagnostics"));
-const state = { name: "untitled.u220", plain: false, origin: "draft", handle: null, savedSource: null, timer: 0, revision: 0, controller: null, hasPreview: false };
+const state = { name: "untitled.u220", plain: false, origin: "draft",
+  handle: null, savedSource: null, sessionAvailable: false, documentRevision: 0 };
 let toastTimer;
 
 function toast(message) {
@@ -58,70 +68,31 @@ function setRenderState(label, tone) {
   renderState.querySelector("b").textContent = label;
 }
 
+const previewRefresh = createPreviewRefresh({
+  compile: compilePreview,
+  getPlain: () => state.plain,
+  getSource: currentSource,
+  isUnavailable: (error) => error instanceof PreviewUnavailableError,
+  linkedScroll,
+  receipt,
+  renderDiagnostics,
+  setRenderState,
+  ui,
+});
+
 function setDocument(document, origin, handle = null) {
   const source = String(document.source ?? "");
   state.name = document.name || "untitled.u220";
   state.plain = Boolean(document.plain);
   state.origin = origin;
   state.handle = handle;
-  state.hasPreview = false;
-  linkedScroll.setEnabled(false);
+  state.documentRevision += 1;
+  previewRefresh.reset();
   state.savedSource = source;
-  receipt.render(null);
   ui.setMode(state.plain);
   ui.setSource(source);
   updateFileState();
-  schedulePreview(true);
-}
-
-async function renderPreview() {
-  const revision = ++state.revision;
-  state.controller?.abort();
-  state.controller = new AbortController();
-  setRenderState("Rendering", "working");
-  try {
-    const result = await compilePreview(currentSource(), state.plain, state.controller.signal);
-    if (revision !== state.revision) return;
-    const diagnostics = result?.diagnostics || [];
-    const sourceLineOffset = result?.source_line_offset || 0;
-    ui.setDiagnostics(diagnostics, sourceLineOffset);
-    const counts = renderDiagnostics(diagnostics, sourceLineOffset);
-    if (counts.errors) {
-      linkedScroll.setEnabled(false);
-      if (state.hasPreview) receipt.render({ ...result, valid: false });
-      else receipt.showPlaceholder("Fix source errors", "The formatter needs a valid document before it can draw the receipt.");
-      setRenderState(`${counts.errors} error${counts.errors === 1 ? "" : "s"}`, "error");
-      return;
-    }
-    const lineCount = receipt.render(result || {});
-    state.hasPreview = true;
-    linkedScroll.setEnabled(true);
-    linkedScroll.refresh();
-    if (counts.warnings) setRenderState(`${counts.warnings} warning${counts.warnings === 1 ? "" : "s"}`, "ready");
-    else setRenderState(`${lineCount} line${lineCount === 1 ? "" : "s"}`, "ready");
-  } catch (error) {
-    if (error.name === "AbortError" || revision !== state.revision) return;
-    if (error instanceof PreviewUnavailableError) {
-      linkedScroll.setEnabled(false);
-      receipt.showPlaceholder("Preview engine isn’t connected", "Open this workspace through the U220 preview command, or attach a browser compiler.");
-      ui.setDiagnostics([]);
-      renderDiagnostics([]);
-      setRenderState("Offline", "idle");
-      return;
-    }
-    linkedScroll.setEnabled(false);
-    if (state.hasPreview) receipt.render({ valid: false });
-    else receipt.showPlaceholder("Preview unavailable", "The formatter could not render this document.");
-    const diagnostics = [{ severity: "error", code: "PREVIEW_FAILED", message: error.message, span: {} }];
-    ui.setDiagnostics(diagnostics);
-    renderDiagnostics(diagnostics);
-    setRenderState("Preview failed", "error");
-  }
-}
-
-function schedulePreview(immediate = false) {
-  clearTimeout(state.timer);
-  state.timer = setTimeout(renderPreview, immediate ? 0 : 110);
+  previewRefresh.schedule(true);
 }
 
 async function openFile() {
@@ -134,26 +105,26 @@ async function openFile() {
   } catch (error) { toast(`Couldn’t open that file: ${error.message}`); }
 }
 
-async function saveFile() {
+const saveFile = createExclusiveSave(async () => {
+  const source = currentSource();
   try {
-    if (state.origin === "browser" && state.handle) {
-      await writeBrowserFile(state.handle, currentSource());
-    } else if (state.origin !== "browser" && hasHttpSession) {
-      const response = await saveSession(currentSource());
-      if (response.name) state.name = response.name;
-      state.origin = "session";
-    } else {
-      const saved = await saveBrowserCopy(currentSource(), state.name);
-      if (!saved) return;
-      state.handle = saved.handle;
-      state.name = saved.name;
-      state.origin = "browser";
+    const outcome = await saveCurrentDocument(state, source, {
+      hasSession: state.sessionAvailable,
+      saveSession,
+      writeBrowserFile,
+    });
+    if (outcome.unwritable) {
+      toast(`Can’t update ${outcome.name}; use Save a copy`);
+      return;
     }
-    state.savedSource = currentSource();
+    if (!applySaveOutcome(state, source, outcome)) {
+      toast(`Saved ${outcome.name}; current document unchanged`);
+      return;
+    }
     updateFileState();
     toast(`Saved ${state.name}`);
   } catch (error) { toast(`Couldn’t save: ${error.message}`); }
-}
+}, () => toast("Save already in progress"));
 
 async function saveCopy() {
   try {
@@ -163,16 +134,14 @@ async function saveCopy() {
 }
 
 editor.addEventListener("input", () => {
-  linkedScroll.setEnabled(false);
   updateFileState();
-  schedulePreview();
+  previewRefresh.schedule();
 });
 document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => {
-  linkedScroll.setEnabled(false);
   state.plain = button.dataset.mode === "plain";
   ui.setDiagnostics([]);
   ui.setMode(state.plain);
-  schedulePreview(true);
+  previewRefresh.schedule(true);
 }));
 $("#open-button").addEventListener("click", openFile);
 $("#save-button").addEventListener("click", saveFile);
@@ -182,23 +151,23 @@ window.addEventListener("beforeunload", (event) => {
   event.preventDefault();
   event.returnValue = "";
 });
-window.addEventListener("keydown", (event) => {
-  if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "s") return;
-  event.preventDefault();
-  (event.shiftKey ? saveCopy : saveFile)();
-});
+window.addEventListener("keydown", (event) => handleSaveShortcut(event, {
+  save: saveFile,
+  saveCopy,
+}), { capture: true });
 
 const shellApi = window.U220Preview = window.U220Preview || {};
-shellApi.refresh = () => schedulePreview(true);
+shellApi.refresh = previewRefresh.refresh;
 shellApi.setSource = (source, options = {}) => setDocument({ source, name: options.name, plain: options.plain }, "draft");
-window.addEventListener("u220:compiler-ready", shellApi.refresh);
+window.addEventListener("u220:compiler-ready", () => previewRefresh.refresh());
 
 try {
   const session = await loadSession();
+  state.sessionAvailable = Boolean(session);
   if (session) setDocument(session, "session");
-  else { updateFileState(); schedulePreview(true); }
+  else { updateFileState(); previewRefresh.schedule(true); }
 } catch (error) {
   updateFileState();
-  schedulePreview(true);
+  previewRefresh.schedule(true);
   toast(`Using a new document: ${error.message}`);
 }

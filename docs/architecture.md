@@ -164,10 +164,12 @@ different heights share the printer baseline. Editor and receipt scroll
 positions are linked by normalized source spans and paper events, and stale
 error previews deliberately do not drive scrolling.
 
-Saving is an explicit, atomic write to the fixed file selected when the session
-started. The web domain does not expose arbitrary server-side paths. Preview
-compilation may produce bytes in memory, but editing never submits or transports
-them to a printer.
+Command-S is an explicit, atomic write to the fixed file selected when the
+session started, or to a browser file with an active writable handle.
+Shift-Command-S owns separate copy creation; a read-only browser file never
+falls through to the session target. The web domain does not expose arbitrary
+server-side paths. Preview compilation may produce bytes in memory, but editing
+never submits or transports them to a printer.
 
 ## Initialization and profiles
 

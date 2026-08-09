@@ -168,9 +168,11 @@ paper width, line spacing, alignment, feed and reverse-feed motion, styles,
 cutter travel, and cut position. Invalid edits leave the last valid receipt
 visible and add source-line diagnostics.
 
-Press Command-S to save atomically to the opened file. Stopping the command with
-Ctrl-C closes the loopback-only server. The preview cannot print or contact the
-printer.
+Press Command-S to update the source file owned by the preview session;
+Shift-Command-S explicitly saves a separate copy. Stopping the command with
+Ctrl-C closes the loopback-only server. Browser-opened files are updated only
+when the browser grants writable access. The preview cannot print or contact
+the printer.
 
 The default 9-pin view uses separately authored, approximate Font A and Font B
 strike atlases for printable ASCII. A profile-calibrated browser-font baseline
