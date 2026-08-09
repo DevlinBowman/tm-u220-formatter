@@ -151,7 +151,7 @@ each fixed-radius impact to 2×1 or 1×2 positions; enabling both yields a liter
 character spacing when no additional spacing is requested.
 
 The checkout-only glyph workspace keeps all 7×9 or 9×9 positions editable. Its
-Font A/B authoring baseline after pin 8 is an explicit reconstruction guide,
+Font A/B authoring baseline after pin 7 is an explicit reconstruction guide,
 not resident printer data; Epson defines no internal baseline, and the printer's
 matrix-bottom line-alignment edge remains after pin 9. The workspace presents
 built-in character spacing and default line spacing outside the matrix, and

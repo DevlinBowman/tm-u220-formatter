@@ -1,4 +1,4 @@
-// Verifies the editor's matrix-bottom guide remains presentation-only.
+// Verifies the editor's baseline and matrix-bottom guides remain presentation-only.
 // A tiny DOM fake keeps the lattice test independent from a browser runtime.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -8,11 +8,11 @@ import { createDotGrid } from "../../dev/glyph_editor/public/grid.js";
 
 test("both fonts share an authoring baseline while retaining matrix alignment", () => {
   assert.deepEqual(fontAuthoringGuide("a", 9), {
-    authoringBaselineAfterRow: 8,
+    authoringBaselineAfterRow: 7,
     alignmentEdgeAfterRow: 9,
   });
   assert.deepEqual(fontAuthoringGuide("b", 9), {
-    authoringBaselineAfterRow: 8,
+    authoringBaselineAfterRow: 7,
     alignmentEdgeAfterRow: 9,
   });
 });
@@ -67,7 +67,7 @@ test("matrix guide follows row nine without creating or editing a cell", (t) => 
     (cell) => cell.dataset.authoringBaseline === "true").length, 7);
   assert.equal(cells(root).filter(
     (cell) => cell.dataset.authoringBaseline === "true")
-    .every((cell) => Number(cell.dataset.row) === 7), true);
+    .every((cell) => Number(cell.dataset.row) === 6), true);
   assert.equal(cells(root).filter(
     (cell) => cell.dataset.active === "true").length, 1);
   assert.match(cells(root).at(-1).attributes["aria-label"],
@@ -84,7 +84,7 @@ test("matrix guide follows row nine without creating or editing a cell", (t) => 
     (cell) => cell.dataset.authoringBaseline === "true").length, 9);
   assert.equal(cells(root).filter(
     (cell) => cell.dataset.authoringBaseline === "true")
-    .every((cell) => Number(cell.dataset.row) === 7), true);
+    .every((cell) => Number(cell.dataset.row) === 6), true);
   assert.equal(editCount, 0);
   assert.throws(() => fontAuthoringGuide("c", 9),
     /supported glyph matrix/);

@@ -16,7 +16,7 @@ Each glyph column is a horizontal 1/160-inch half-dot position containing a
 full pin impact, not a partial dot. Glyph height remains nine fixed 1/72-inch
 pin rows; the printer's finer vertical paper-feed unit is not an editable glyph
 slot. Every row and column remains usable mask data. The editor draws a
-development authoring baseline after pin 8 for both fonts and separately marks
+development authoring baseline after pin 7 for both fonts and separately marks
 Epson's matrix-bottom alignment edge after pin 9. Epson defines no internal
 baseline for these fonts; our guide is a reconstruction convention, and neither
 guide is saved or printed.
