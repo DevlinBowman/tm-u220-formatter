@@ -1,6 +1,6 @@
 #!/bin/sh
-# Opens the checkout-only browser tool for refining preview glyph strike masks.
-# This launcher is deliberately excluded from the installed 220 command surface.
+# Opens the checkout-only browser tool directly or behind `220 dev glyphs`.
+# Direct invocation retains advanced receipt and loopback-server options.
 set -eu
 
 script_dir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)

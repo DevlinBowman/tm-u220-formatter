@@ -32,6 +32,7 @@ local suites = {
     "unit.config_editor_test",
     "unit.terminal_state_test",
     "unit.editor_launcher_test",
+    "unit.glyph_editor_launcher_test",
     "unit.helper_process_test",
     "unit.setup_printing_test",
     "unit.printing_status_test",

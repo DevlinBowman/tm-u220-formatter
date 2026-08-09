@@ -3,7 +3,7 @@
 Run the checkout-only development command from the repository root:
 
 ```sh
-./dev/glyphs
+./bin/tm-u220 dev glyphs
 ```
 
 The loopback web workspace links the glyph editor and the ordinary receipt
@@ -31,5 +31,6 @@ diameters for single and double-strike text in
 than character data. Compiler geometry, code pages, profiles, printer bytes,
 and printing are not editable from the glyph APIs.
 
-Use `./dev/glyphs --no-open --port 0` when another process will open the printed
-URL. Stop the command with Ctrl-C.
+The direct `./dev/glyphs` interface retains the optional receipt, profile, text,
+browser-opening, and port controls. Use `./dev/glyphs --no-open --port 0` when
+another process will open the printed URL. Stop the command with Ctrl-C.

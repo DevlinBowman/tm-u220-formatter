@@ -41,9 +41,14 @@ function M.overview()
         end
     end
     lines[#lines + 1] = ""
-    lines[#lines + 1] = "Grouped aliases:"
-    lines[#lines + 1] = "  220 printer setup|status|deauthorize"
-    lines[#lines + 1] = "  220 profile queries|decode"
+    lines[#lines + 1] = "Command groups:"
+    for _, name in ipairs(Commands.group_order) do
+        local subcommands = {}
+        for _, entry in ipairs(Commands.groups[name].order) do
+            subcommands[#subcommands + 1] = entry[1]
+        end
+        lines[#lines + 1] = "  220 " .. name .. " " .. table.concat(subcommands, "|")
+    end
     lines[#lines + 1] = ""
     lines[#lines + 1] = "Input:"
     lines[#lines + 1] = "  --text TEXT                       Use a literal string."
@@ -60,16 +65,22 @@ end
 
 local function command_help(target)
     local definition = target.command
+    local path = definition.flat == false and target.path or definition.name
+    local usage = path .. definition.usage:sub(#definition.name + 1)
     local lines = {
-        "220 " .. definition.name .. " - " .. definition.summary,
+        "220 " .. path .. " - " .. definition.summary,
         "",
         "Usage:",
-        "  220 " .. definition.usage,
+        "  220 " .. usage,
     }
-    if #definition.aliases > 0 then
+    local aliases = {}
+    for _, alias in ipairs(definition.aliases) do
+        if alias ~= path then aliases[#aliases + 1] = alias end
+    end
+    if #aliases > 0 then
         lines[#lines + 1] = ""
         lines[#lines + 1] = "Grouped alias:"
-        for _, alias in ipairs(definition.aliases) do
+        for _, alias in ipairs(aliases) do
             local suffix = definition.usage:sub(#definition.name + 1)
             lines[#lines + 1] = "  220 " .. alias .. suffix
         end
@@ -116,7 +127,9 @@ local function group_help(target)
         lines[#lines + 1] = string.format("  %-14s %s", entry[1], definition.summary)
     end
     lines[#lines + 1] = ""
-    lines[#lines + 1] = "Legacy flat spellings remain accepted."
+    if group.legacy_flat ~= false then
+        lines[#lines + 1] = "Legacy flat spellings remain accepted."
+    end
     lines[#lines + 1] = "Run '220 help " .. group.name .. " <command>' for focused help."
     return table.concat(lines, "\n") .. "\n"
 end

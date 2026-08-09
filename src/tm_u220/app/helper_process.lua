@@ -1,5 +1,5 @@
--- Builds and runs fixed Node helper commands used by app-level printing administration.
--- Callers retain ownership of feature flags and user-facing result messages.
+-- Builds and runs fixed helper process specifications shared by application services.
+-- Callers own allowed executable construction, feature policy, and user-facing messages.
 local Defaults = require("tm_u220.app.local_defaults")
 
 local M = {}

@@ -232,8 +232,11 @@ printer network. See [local LPD printing](docs/lpd-printing.md),
 | `220 profile-queries` | List supported transport-neutral device queries |
 | `220 setup-printing` | Review and install the per-machine printing policy |
 | `220 printing-status` | Audit the installed policy without network I/O |
+| `220 dev glyphs` | Open the checkout-only glyph editor and receipt preview |
 
 Run `220`, `220 help COMMAND`, or `220 COMMAND --help` for focused usage.
+The `dev` group is available only from a source checkout; invoke
+`./dev/glyphs` directly for its advanced receipt and server options.
 
 ## Character data and Epson materials
 

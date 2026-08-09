@@ -138,6 +138,18 @@ test("preview routes through the browser workspace launcher", () => {
       "--aliases", join(projectRoot, "config/directives/aliases.u220a"), ""].join("\n"));
 });
 
+test("developer glyphs routes through the fixed checkout launcher", () => {
+  const result = succeed(["dev", "glyphs"], {
+    env: {
+      ...process.env,
+      PATH: `${fixtureRoot}${delimiter}${process.env.PATH ?? ""}`,
+    },
+  });
+
+  assert.equal(result.stdout,
+    `${join(projectRoot, "dev/glyph_editor/server/main.mjs")}\n`);
+});
+
 test("inspect infers authored input and exposes compiled nodes", () => {
   const result = JSON.parse(succeed(["inspect", jobPath, "--json"]).stdout);
 

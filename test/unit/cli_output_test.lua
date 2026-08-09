@@ -58,6 +58,9 @@ tests[#tests + 1] = { "focused help is equivalent across supported spellings", f
         { { "help", "printer" }, { "printer", "-h" }, "printer" },
         { { "help", "printer", "setup" },
             { "printer", "setup", "--help" }, "printer setup" },
+        { { "help", "dev" }, { "dev", "-h" }, "dev" },
+        { { "help", "dev", "glyphs" },
+            { "dev", "glyphs", "--help" }, "dev glyphs" },
     }
     for _, case in ipairs(cases) do
         local expected = assert(help.render(case[3]))
@@ -77,6 +80,7 @@ tests[#tests + 1] = { "focused help is equivalent across supported spellings", f
     check.contains(help.text, "220 render receipt.u220")
     check.contains(help.text, "220 directives")
     check.contains(help.text, "220 config")
+    check.contains(help.text, "220 dev glyphs")
     check.falsy(help.text:find("220 edit", 1, true))
 
     local config = assert(help.render("config"))
@@ -84,6 +88,23 @@ tests[#tests + 1] = { "focused help is equivalent across supported spellings", f
     check.contains(config, "user-owned copies")
     local directives = assert(help.render("directives"))
     check.contains(directives, "220 rules directives")
+
+    local developer = assert(help.render("dev"))
+    check.contains(developer, "220 dev - Checkout-only developer commands")
+    check.contains(developer, "glyphs")
+    check.falsy(developer:find("Legacy flat spellings", 1, true))
+    local glyphs = assert(help.render("dev glyphs"))
+    check.contains(glyphs, "220 dev glyphs - Open the checkout-only glyph editor")
+    check.contains(glyphs, "Usage:\n  220 dev glyphs")
+    check.contains(glyphs, "available only from a source checkout")
+end }
+
+tests[#tests + 1] = { "developer leaf has no flat help spelling", function()
+    for _, topic in ipairs({ "glyphs", "dev-glyphs" }) do
+        local rendered, err = help.render(topic)
+        check.equal(rendered, nil)
+        check.contains(err, "unknown help topic")
+    end
 end }
 
 tests[#tests + 1] = { "unknown focused help uses the standard usage envelope", function()

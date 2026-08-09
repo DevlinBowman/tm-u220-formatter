@@ -1,5 +1,7 @@
 -- Composes the public command catalog used by parsing, validation, dispatch, and focused help.
--- Legacy flat command names remain canonical while grouped aliases provide a coherent navigation path.
+-- Compatibility groups retain flat names while branch-only catalogs opt out explicitly.
+local DeveloperCatalog = require("tm_u220.cli.developer_catalog")
+
 local M = {}
 
 local function options(...)
@@ -120,15 +122,21 @@ local SECTIONS = {
     { name = "Reference", commands = REFERENCE },
 }
 local DEFINITIONS, ORDER = {}, {}
+
+local function register(definition, section)
+    assert(not DEFINITIONS[definition.name], "duplicate CLI command " .. definition.name)
+    definition.section = section
+    definition.aliases = {}
+    DEFINITIONS[definition.name] = definition
+    ORDER[#ORDER + 1] = definition.name
+end
+
 for _, section in ipairs(SECTIONS) do
     for _, definition in ipairs(section.commands) do
-        assert(not DEFINITIONS[definition.name], "duplicate CLI command " .. definition.name)
-        definition.section = section.name
-        definition.aliases = {}
-        DEFINITIONS[definition.name] = definition
-        ORDER[#ORDER + 1] = definition.name
+        register(definition, section.name)
     end
 end
+for _, definition in ipairs(DeveloperCatalog.definitions) do register(definition) end
 
 local GROUPS = {
     printer = { summary = "Printing-policy lifecycle commands", order = {
@@ -138,8 +146,11 @@ local GROUPS = {
     profile = { summary = "Printer-profile discovery commands", order = {
         { "queries", "profile-queries" }, { "decode", "profile-decode" },
     } },
+    dev = DeveloperCatalog.group,
 }
-for group_name, group in pairs(GROUPS) do
+local GROUP_ORDER = { "printer", "profile", "dev" }
+for _, group_name in ipairs(GROUP_ORDER) do
+    local group = GROUPS[group_name]
     group.name, group.commands = group_name, {}
     for _, entry in ipairs(group.order) do
         group.commands[entry[1]] = entry[2]
@@ -148,7 +159,8 @@ for group_name, group in pairs(GROUPS) do
     end
 end
 
-M.definitions, M.sections, M.order, M.groups = DEFINITIONS, SECTIONS, ORDER, GROUPS
+M.definitions, M.sections, M.order = DEFINITIONS, SECTIONS, ORDER
+M.groups, M.group_order = GROUPS, GROUP_ORDER
 
 function M.get(name) return DEFINITIONS[name] end
 function M.get_group(name) return GROUPS[name] end
@@ -156,7 +168,9 @@ function M.get_group(name) return GROUPS[name] end
 function M.resolve(argv, index)
     index = index or 1
     local name = argv[index]
-    if DEFINITIONS[name] then return DEFINITIONS[name], 1, name end
+    if DEFINITIONS[name] and DEFINITIONS[name].flat ~= false then
+        return DEFINITIONS[name], 1, name
+    end
     local group = GROUPS[name]
     if not group then return nil, nil, nil, "unknown command: " .. tostring(name) end
     local subcommand = argv[index + 1]
@@ -170,7 +184,9 @@ end
 
 function M.resolve_help(topic)
     if topic == nil or topic == "" then return nil end
-    if DEFINITIONS[topic] then return { command = DEFINITIONS[topic], path = topic } end
+    if DEFINITIONS[topic] and DEFINITIONS[topic].flat ~= false then
+        return { command = DEFINITIONS[topic], path = topic }
+    end
     if GROUPS[topic] then return { group = GROUPS[topic], path = topic } end
     local first, second = topic:match("^(%S+)%s+(%S+)$")
     local canonical = first and GROUPS[first] and GROUPS[first].commands[second] or nil

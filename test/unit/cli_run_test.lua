@@ -108,6 +108,26 @@ tests[#tests + 1] = { "preview delegates only to the browser editor launcher", f
     check.equal(call.options.profile_path, "/user/profile")
 end }
 
+tests[#tests + 1] = { "developer glyphs delegates only to its checkout launcher", function()
+    local received, preview_called, error_text
+    local glyph_runtime = { marker = true }
+    local status = run.main({ "dev", "glyphs" }, {
+        glyph_editor_launcher = {
+            run = function(runtime)
+                received = runtime
+                return 7, "glyph editor could not open"
+            end,
+        },
+        glyph_editor_runtime = glyph_runtime,
+        editor_launcher = { run = function() preview_called = true end },
+        write_error = function(value) error_text = value end,
+    })
+    check.equal(status, 7)
+    check.equal(received, glyph_runtime)
+    check.equal(preview_called, nil)
+    check.equal(error_text, "glyph editor could not open\n")
+end }
+
 tests[#tests + 1] = { "config delegates only to the configuration editor", function()
     local received, error_text
     local config_runtime = { marker = true }

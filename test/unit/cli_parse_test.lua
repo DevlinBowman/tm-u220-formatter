@@ -412,6 +412,25 @@ tests[#tests + 1] = { "grouped command aliases preserve canonical dispatch", fun
     end
 end }
 
+tests[#tests + 1] = { "developer glyphs command remains branch-only and argument-free", function()
+    local value = assert(parse.parse({ "dev", "glyphs" }))
+    check.equal(value.command, "dev-glyphs")
+    check.equal(value.command_path, "dev glyphs")
+
+    local failures = {
+        { { "dev" }, "dev command required" },
+        { { "dev", "missing" }, "unknown dev command: missing" },
+        { { "dev", "glyphs", "extra" }, "dev glyphs expects 0 arguments" },
+        { { "glyphs" }, "unknown command: glyphs" },
+        { { "dev-glyphs" }, "unknown command: dev-glyphs" },
+    }
+    for _, case in ipairs(failures) do
+        local invalid, err = parse.parse(case[1])
+        check.equal(invalid, nil)
+        check.contains(err, case[2])
+    end
+end }
+
 tests[#tests + 1] = { "option boundaries preserve leading-dash values", function()
     local literal = assert(parse.parse({ "render", "--text", "-hello" }))
     check.equal(literal.input, "-hello")

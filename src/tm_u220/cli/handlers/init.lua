@@ -3,6 +3,7 @@
 local Commands = require("tm_u220.cli.commands")
 local Authoring = require("tm_u220.cli.handlers.authoring")
 local Configuration = require("tm_u220.cli.handlers.configuration")
+local Developer = require("tm_u220.cli.handlers.developer")
 local Printing = require("tm_u220.cli.handlers.printing")
 local Reference = require("tm_u220.cli.handlers.reference")
 
@@ -18,6 +19,7 @@ end
 
 include(Authoring.handlers)
 include(Configuration.handlers)
+include(Developer.handlers)
 include(Printing.handlers)
 include(Reference.handlers)
 

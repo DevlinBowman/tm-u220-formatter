@@ -13,8 +13,11 @@ line tokens themselves.
   focused help. Grouped paths such as `220 help printer status` are supported.
 - `220 version` and root `220 --version` read the release's canonical `VERSION`
   file.
-- Flat command names remain accepted. The `printer` and `profile` groups provide
-  a more navigable spelling for related commands.
+- Flat command names remain accepted for existing public commands. The `printer`
+  and `profile` groups provide a more navigable spelling for related commands.
+- `220 dev glyphs` opens the checkout-only glyph editor and receipt preview. It
+  has no flat spelling and refuses to run from a managed installation; the
+  direct `./dev/glyphs` launcher retains advanced receipt and server options.
 - `220 preview FILE` owns the live browser workspace. `220 render [INPUT]` owns
   terminal, JSON, and file rendering; the former `edit` command is removed and
   has no alias.
@@ -25,9 +28,10 @@ line tokens themselves.
 - `--` ends option parsing. It may also force an option-looking value after a
   value-taking option. `-o -` explicitly selects standard output.
 
-The command catalog in `src/tm_u220/cli/commands.lua` owns command paths, arity,
-accepted option families, usage signatures, summaries, aliases, and focused-help
-notes. `src/tm_u220/cli/options.lua` owns option spellings and descriptions.
+The command catalogs in `src/tm_u220/cli/commands.lua` and
+`src/tm_u220/cli/developer_catalog.lua` own command paths, arity, accepted option
+families, usage signatures, summaries, aliases, and focused-help notes.
+`src/tm_u220/cli/options.lua` owns option spellings and descriptions.
 Normalization modules own their individual policies; the dispatcher only calls
 the selected application service.
 
