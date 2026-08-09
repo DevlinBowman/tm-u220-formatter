@@ -1,3 +1,5 @@
+// Adapts the loopback server session into browser document state and persistence calls.
+// Immutable direct-image metadata stays explicit so UI text cannot become printer input.
 export const hasHttpSession = location.protocol === "http:" || location.protocol === "https:";
 
 async function responseJson(response) {
@@ -13,8 +15,12 @@ export async function loadSession() {
   const session = await responseJson(response);
   return {
     source: typeof session.source === "string" ? session.source : "",
+    displaySource: typeof session.display_source === "string"
+      ? session.display_source : undefined,
     name: session.name || "untitled.u220",
     plain: Boolean(session.plain),
+    immutable: Boolean(session.immutable),
+    inputKind: session.input_kind || "document",
   };
 }
 

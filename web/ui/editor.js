@@ -1,3 +1,5 @@
+// Coordinates source-editor presentation, metadata, diagnostics, and editability.
+// Source storage and compiler behavior remain owned by their respective domains.
 import { diagnosticErrorLines, sourceLines } from "./editor/lines.js";
 import { cursorLocation, documentSize } from "./editor/cursor.js";
 import { replaceEditorSource } from "./editor/document.js";
@@ -78,17 +80,25 @@ export function createEditorView(surface, nodes) {
     syntaxHighlights.render(plain);
   }
 
+  function setReadOnly(value) {
+    const readOnly = Boolean(value);
+    surface.setReadOnly(readOnly);
+    nodes.modeButtons.forEach((button) => { button.disabled = readOnly; });
+  }
+
   function setDiagnostics(items = [], sourceLineOffset = 0) {
     errorLines = diagnosticErrorLines(
       items, sourceLineOffset, sourceLines(surface.getSource()).length);
     renderLineNumbers();
   }
 
-  function setFileState(name, dirty, saved) {
+  function setFileState(name, dirty, saved, readOnly = false) {
     nodes.name.textContent = name;
     nodes.dirty.classList.toggle("is-visible", dirty);
     nodes.dirty.setAttribute("aria-hidden", String(!dirty));
-    nodes.saveState.textContent = dirty ? "Unsaved changes" : saved ? "Saved" : "Not saved";
+    nodes.saveState.textContent = readOnly
+      ? "Direct image · read-only"
+      : dirty ? "Unsaved changes" : saved ? "Saved" : "Not saved";
     document.title = `${dirty ? "• " : ""}${name} — U220 Preview`;
   }
 
@@ -101,7 +111,7 @@ export function createEditorView(surface, nodes) {
   updateMeta();
   syntaxHighlights.render(plain);
   return {
-    setDiagnostics, setFileState, setMode, setSource, updateMeta,
+    setDiagnostics, setFileState, setMode, setReadOnly, setSource, updateMeta,
     destroy() {
       syntaxHighlights.destroy();
       gutter.destroy();

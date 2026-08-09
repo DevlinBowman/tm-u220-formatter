@@ -1,4 +1,6 @@
-import { compileBuffer } from "./compiler.mjs";
+// Routes the fixed-target browser session without allowing clients to choose filesystem paths.
+// Immutable direct images compile from their canonical target rather than posted editor text.
+import { compileBuffer, compileTarget } from "./compiler.mjs";
 import { readJson, sendJson, sendStatic } from "./http_helpers.mjs";
 
 function sourceBody(body) {
@@ -20,6 +22,9 @@ export function createRouter({ config, document, webRoot, origin }) {
       }
       if (request.method === "POST" && url.pathname === "/api/preview") {
         const body = await readJson(request);
+        if (document.immutable) {
+          return sendJson(response, 200, await compileTarget(document.path, config));
+        }
         const source = sourceBody(body);
         const plain = typeof body.plain === "boolean" ? body.plain : config.plain;
         return sendJson(response, 200, await compileBuffer(source, { ...config, plain }));

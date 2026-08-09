@@ -135,7 +135,8 @@ test("preview routes through the browser workspace launcher", () => {
   assert.equal(result.stdout,
     [join(projectRoot, "web/server/main.mjs"), jobPath,
       "--profile", join(projectRoot, "config/printers/local.u220p"),
-      "--aliases", join(projectRoot, "config/directives/aliases.u220a"), ""].join("\n"));
+      "--aliases", join(projectRoot, "config/directives/aliases.u220a"),
+      "--image-profile", join(projectRoot, "config/images/default.u220i"), ""].join("\n"));
 });
 
 test("developer glyphs routes through the fixed checkout launcher", () => {

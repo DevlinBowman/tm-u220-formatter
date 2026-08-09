@@ -1,3 +1,5 @@
+// Presents textarea and enhanced contenteditable implementations behind one source-surface API.
+// Read-only state is applied without exposing either DOM implementation to orchestration code.
 import { createTextIndex } from "./text-index.js";
 
 function bounded(value, maximum) {
@@ -42,6 +44,10 @@ function textareaSurface(element) {
       return () => events.forEach((event) => element.removeEventListener(event, callback));
     },
     getTextIndex: () => null,
+    setReadOnly(value) {
+      element.readOnly = Boolean(value);
+      element.setAttribute("aria-readonly", String(Boolean(value)));
+    },
   };
 }
 
@@ -144,6 +150,11 @@ function enhancedSurface(textarea) {
       };
     },
     getTextIndex: () => createTextIndex(editor),
+    setReadOnly(value) {
+      const readOnly = Boolean(value);
+      editor.contentEditable = readOnly ? "false" : "plaintext-only";
+      editor.setAttribute("aria-readonly", String(readOnly));
+    },
   };
   textarea.replaceWith(editor);
   return surface;

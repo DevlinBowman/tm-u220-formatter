@@ -1,5 +1,5 @@
 // Validates the private browser-preview server's fixed target and local runtime options.
-import { access } from "node:fs/promises";
+import { access, realpath } from "node:fs/promises";
 import { constants } from "node:fs";
 import { resolve } from "node:path";
 
@@ -22,6 +22,9 @@ export async function parseConfig(argv, root) {
     } else if (token === "--profile") {
       config.profile = resolve(requireValue(argv, index, token));
       index += 1;
+    } else if (token === "--image-profile") {
+      config.imageProfile = resolve(requireValue(argv, index, token));
+      index += 1;
     } else if (token === "--port") {
       const raw = requireValue(argv, index, token);
       if (!/^\d+$/.test(raw) || Number(raw) > 65535) {
@@ -33,12 +36,14 @@ export async function parseConfig(argv, root) {
     else positional.push(token);
   }
   if (positional.length !== 1) throw new Error("preview expects one existing file");
-  config.target = resolve(positional[0]);
+  config.target = await realpath(resolve(positional[0]));
   config.root = root;
   config.aliases ||= resolve(root, "config/directives/aliases.u220a");
   config.profile ||= resolve(root, "config/printers/local.u220p");
-  await access(config.target, constants.R_OK | constants.W_OK);
+  config.imageProfile ||= resolve(root, "config/images/default.u220i");
+  await access(config.target, constants.R_OK);
   await access(config.aliases, constants.R_OK);
   await access(config.profile, constants.R_OK);
+  await access(config.imageProfile, constants.R_OK);
   return config;
 }

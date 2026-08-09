@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Starts the private fixed-target preview server and opens its browser workspace.
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { dirname, resolve } from "node:path";
@@ -12,7 +13,7 @@ const root = resolve(serverDirectory, "../..");
 
 async function main() {
   const config = await parseConfig(process.argv.slice(2), root);
-  const document = new EditorDocument(config.target, config.plain);
+  const document = await EditorDocument.open(config.target, config.plain);
   let address;
   const origin = () => address ? `http://${config.host}:${address.port}` : "http://127.0.0.1";
   const server = createServer(createRouter({

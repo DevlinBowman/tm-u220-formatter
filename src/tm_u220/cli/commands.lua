@@ -35,7 +35,7 @@ local AUTHORING = {
         options = options("output", "profile_path", "hex", "raw_text", "formatted_text"),
         option_order = { "raw_text", "formatted_text", "profile_path", "hex", "output" } },
     { name = "preview", usage = "preview <file> [--profile PROFILE]",
-        summary = "Open one existing job beside its live graphical receipt.", arguments = 1,
+        summary = "Open one existing job or image in the graphical browser preview.", arguments = 1,
         input = input("job", { "job" }), options = options("profile_path"),
         option_order = { "profile_path" } },
     { name = "render", usage = "render [<input>] [options]",

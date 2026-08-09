@@ -22,6 +22,10 @@ function M.command(path, options)
         parts[#parts + 1] = "--aliases"
         parts[#parts + 1] = shell_quote(options.alias_path)
     end
+    if options.image_profile_path then
+        parts[#parts + 1] = "--image-profile"
+        parts[#parts + 1] = shell_quote(options.image_profile_path)
+    end
     return table.concat(parts, " ")
 end
 

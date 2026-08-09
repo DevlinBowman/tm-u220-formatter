@@ -44,7 +44,8 @@ const linkedScroll = createLinkedScroll({
 receipt.onLayout(linkedScroll.refresh);
 const renderDiagnostics = createDiagnosticsView($("#diagnostics"));
 const state = { name: "untitled.u220", plain: false, origin: "draft",
-  handle: null, savedSource: null, sessionAvailable: false, documentRevision: 0 };
+  handle: null, savedSource: null, sessionAvailable: false, documentRevision: 0,
+  immutable: false };
 let toastTimer;
 
 function toast(message) {
@@ -60,7 +61,14 @@ function currentSource() { return sourceSurface.getSource(); }
 function isDirty() { return state.savedSource !== currentSource(); }
 
 function updateFileState() {
-  ui.setFileState(state.name, isDirty(), state.savedSource !== null);
+  ui.setFileState(state.name, isDirty(), state.savedSource !== null, state.immutable);
+}
+
+function setImmutable(value) {
+  state.immutable = Boolean(value);
+  ui.setReadOnly(state.immutable);
+  [$("#open-button"), $("#save-button"), $("#save-copy-button")]
+    .forEach((button) => { button.disabled = state.immutable; });
 }
 
 function setRenderState(label, tone) {
@@ -81,11 +89,12 @@ const previewRefresh = createPreviewRefresh({
 });
 
 function setDocument(document, origin, handle = null) {
-  const source = String(document.source ?? "");
+  const source = String(document.displaySource ?? document.source ?? "");
   state.name = document.name || "untitled.u220";
   state.plain = Boolean(document.plain);
   state.origin = origin;
   state.handle = handle;
+  setImmutable(document.immutable);
   state.documentRevision += 1;
   previewRefresh.reset();
   state.savedSource = source;
@@ -97,6 +106,7 @@ function setDocument(document, origin, handle = null) {
 
 async function openFile() {
   try {
+    if (state.immutable) return toast("Direct image previews are read-only");
     if (isDirty() && !window.confirm("Discard unsaved changes and open another file?")) return;
     const document = await openBrowserFile($("#file-input"));
     if (!document) return;
@@ -106,6 +116,7 @@ async function openFile() {
 }
 
 const saveFile = createExclusiveSave(async () => {
+  if (state.immutable) return toast("Direct image previews are read-only");
   const source = currentSource();
   try {
     const outcome = await saveCurrentDocument(state, source, {
@@ -128,6 +139,7 @@ const saveFile = createExclusiveSave(async () => {
 
 async function saveCopy() {
   try {
+    if (state.immutable) return toast("Direct image previews are read-only");
     const copy = await saveBrowserCopy(currentSource(), state.name);
     if (copy) toast(`Saved a copy of ${copy.name}`);
   } catch (error) { toast(`Couldn’t save a copy: ${error.message}`); }
@@ -158,7 +170,11 @@ window.addEventListener("keydown", (event) => handleSaveShortcut(event, {
 
 const shellApi = window.U220Preview = window.U220Preview || {};
 shellApi.refresh = previewRefresh.refresh;
-shellApi.setSource = (source, options = {}) => setDocument({ source, name: options.name, plain: options.plain }, "draft");
+shellApi.setSource = (source, options = {}) => {
+  if (state.immutable) return false;
+  setDocument({ source, name: options.name, plain: options.plain }, "draft");
+  return true;
+};
 window.addEventListener("u220:compiler-ready", () => previewRefresh.refresh());
 
 try {
