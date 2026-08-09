@@ -1,0 +1,179 @@
+!tm-u220 job 1
+# Generated from the Unicode-licensed standard page modules; do not edit by hand.
+# Covers every mapping distributed in the public standard-page catalog.
+@align center
+STANDARD CODE PAGE TEST
+@align left
+
+PAGE 0 PC437
+   2 3 4 5 6 7 8 9 A B C D E F
+@text 0  | @code-page 0 | @text   0 @ P ` p Ç É á ░ └ ╨ α ≡ | @line
+@text 1  | @code-page 0 | @text ! 1 A Q a q ü æ í ▒ ┴ ╤ ß ± | @line
+@text 2  | @code-page 0 | @text " 2 B R b r é Æ ó ▓ ┬ ╥ Γ ≥ | @line
+@text 3  | @code-page 0 | @text # 3 C S c s â ô ú │ ├ ╙ π ≤ | @line
+@text 4  | @code-page 0 | @text $ 4 D T d t ä ö ñ ┤ ─ ╘ Σ ⌠ | @line
+@text 5  | @code-page 0 | @text % 5 E U e u à ò Ñ ╡ ┼ ╒ σ ⌡ | @line
+@text 6  | @code-page 0 | @text & 6 F V f v å û ª ╢ ╞ ╓ µ ÷ | @line
+@text 7  | @code-page 0 | @text ' 7 G W g w ç ù º ╖ ╟ ╫ τ ≈ | @line
+@text 8  | @code-page 0 | @text ( 8 H X h x ê ÿ ¿ ╕ ╚ ╪ Φ ° | @line
+@text 9  | @code-page 0 | @text ) 9 I Y i y ë Ö ⌐ ╣ ╔ ┘ Θ ∙ | @line
+@text A  | @code-page 0 | @text * : J Z j z è Ü ¬ ║ ╩ ┌ Ω · | @line
+@text B  | @code-page 0 | @text + ; K [ k { ï ¢ ½ ╗ ╦ █ δ √ | @line
+@text C  | @code-page 0 | @text , < L \ l | î £ ¼ ╝ ╠ ▄ ∞ ⁿ | @line
+@text D  | @code-page 0 | @text - = M ] m } ì ¥ ¡ ╜ ═ ▌ φ ² | @line
+@text E  | @code-page 0 | @text . > N ^ n ~ Ä ₧ « ╛ ╬ ▐ ε ■ | @line
+@text F  | @code-page 0 | @text / ? O _ o   Å ƒ » ┐ ╧ ▀ ∩   | @line
+
+PAGE 2 PC850
+   8 9 A B C D E F
+@text 0  | @code-page 2 | @text Ç É á ░ └ ð Ó ­ | @line
+@text 1  | @code-page 2 | @text ü æ í ▒ ┴ Ð ß ± | @line
+@text 2  | @code-page 2 | @text é Æ ó ▓ ┬ Ê Ô ‗ | @line
+@text 3  | @code-page 2 | @text â ô ú │ ├ Ë Ò ¾ | @line
+@text 4  | @code-page 2 | @text ä ö ñ ┤ ─ È õ ¶ | @line
+@text 5  | @code-page 2 | @text à ò Ñ Á ┼ ı Õ § | @line
+@text 6  | @code-page 2 | @text å û ª Â ã Í µ ÷ | @line
+@text 7  | @code-page 2 | @text ç ù º À Ã Î þ ¸ | @line
+@text 8  | @code-page 2 | @text ê ÿ ¿ © ╚ Ï Þ ° | @line
+@text 9  | @code-page 2 | @text ë Ö ® ╣ ╔ ┘ Ú ¨ | @line
+@text A  | @code-page 2 | @text è Ü ¬ ║ ╩ ┌ Û · | @line
+@text B  | @code-page 2 | @text ï ø ½ ╗ ╦ █ Ù ¹ | @line
+@text C  | @code-page 2 | @text î £ ¼ ╝ ╠ ▄ ý ³ | @line
+@text D  | @code-page 2 | @text ì Ø ¡ ¢ ═ ¦ Ý ² | @line
+@text E  | @code-page 2 | @text Ä × « ¥ ╬ Ì ¯ ■ | @line
+@text F  | @code-page 2 | @text Å ƒ » ┐ ¤ ▀ ´   | @line
+
+PAGE 3 PC860
+   8 9 A B C D E F
+@text 0  | @code-page 3 | @text Ç É á ░ └ ╨ α ≡ | @line
+@text 1  | @code-page 3 | @text ü À í ▒ ┴ ╤ ß ± | @line
+@text 2  | @code-page 3 | @text é È ó ▓ ┬ ╥ Γ ≥ | @line
+@text 3  | @code-page 3 | @text â ô ú │ ├ ╙ π ≤ | @line
+@text 4  | @code-page 3 | @text ã õ ñ ┤ ─ ╘ Σ ⌠ | @line
+@text 5  | @code-page 3 | @text à ò Ñ ╡ ┼ ╒ σ ⌡ | @line
+@text 6  | @code-page 3 | @text Á Ú ª ╢ ╞ ╓ µ ÷ | @line
+@text 7  | @code-page 3 | @text ç ù º ╖ ╟ ╫ τ ≈ | @line
+@text 8  | @code-page 3 | @text ê Ì ¿ ╕ ╚ ╪ Φ ° | @line
+@text 9  | @code-page 3 | @text Ê Õ Ò ╣ ╔ ┘ Θ ∙ | @line
+@text A  | @code-page 3 | @text è Ü ¬ ║ ╩ ┌ Ω · | @line
+@text B  | @code-page 3 | @text Í ¢ ½ ╗ ╦ █ δ √ | @line
+@text C  | @code-page 3 | @text Ô £ ¼ ╝ ╠ ▄ ∞ ⁿ | @line
+@text D  | @code-page 3 | @text ì Ù ¡ ╜ ═ ▌ φ ² | @line
+@text E  | @code-page 3 | @text Ã ₧ « ╛ ╬ ▐ ε ■ | @line
+@text F  | @code-page 3 | @text Â Ó » ┐ ╧ ▀ ∩   | @line
+
+PAGE 4 PC863
+   8 9 A B C D E F
+@text 0  | @code-page 4 | @text Ç É ¦ ░ └ ╨ α ≡ | @line
+@text 1  | @code-page 4 | @text ü È ´ ▒ ┴ ╤ ß ± | @line
+@text 2  | @code-page 4 | @text é Ê ó ▓ ┬ ╥ Γ ≥ | @line
+@text 3  | @code-page 4 | @text â ô ú │ ├ ╙ π ≤ | @line
+@text 4  | @code-page 4 | @text Â Ë ¨ ┤ ─ ╘ Σ ⌠ | @line
+@text 5  | @code-page 4 | @text à Ï ¸ ╡ ┼ ╒ σ ⌡ | @line
+@text 6  | @code-page 4 | @text ¶ û ³ ╢ ╞ ╓ µ ÷ | @line
+@text 7  | @code-page 4 | @text ç ù ¯ ╖ ╟ ╫ τ ≈ | @line
+@text 8  | @code-page 4 | @text ê ¤ Î ╕ ╚ ╪ Φ ° | @line
+@text 9  | @code-page 4 | @text ë Ô ⌐ ╣ ╔ ┘ Θ ∙ | @line
+@text A  | @code-page 4 | @text è Ü ¬ ║ ╩ ┌ Ω · | @line
+@text B  | @code-page 4 | @text ï ¢ ½ ╗ ╦ █ δ √ | @line
+@text C  | @code-page 4 | @text î £ ¼ ╝ ╠ ▄ ∞ ⁿ | @line
+@text D  | @code-page 4 | @text ‗ Ù ¾ ╜ ═ ▌ φ ² | @line
+@text E  | @code-page 4 | @text À Û « ╛ ╬ ▐ ε ■ | @line
+@text F  | @code-page 4 | @text § ƒ » ┐ ╧ ▀ ∩   | @line
+
+PAGE 5 PC865
+   8 9 A B C D E F
+@text 0  | @code-page 5 | @text Ç É á ░ └ ╨ α ≡ | @line
+@text 1  | @code-page 5 | @text ü æ í ▒ ┴ ╤ ß ± | @line
+@text 2  | @code-page 5 | @text é Æ ó ▓ ┬ ╥ Γ ≥ | @line
+@text 3  | @code-page 5 | @text â ô ú │ ├ ╙ π ≤ | @line
+@text 4  | @code-page 5 | @text ä ö ñ ┤ ─ ╘ Σ ⌠ | @line
+@text 5  | @code-page 5 | @text à ò Ñ ╡ ┼ ╒ σ ⌡ | @line
+@text 6  | @code-page 5 | @text å û ª ╢ ╞ ╓ µ ÷ | @line
+@text 7  | @code-page 5 | @text ç ù º ╖ ╟ ╫ τ ≈ | @line
+@text 8  | @code-page 5 | @text ê ÿ ¿ ╕ ╚ ╪ Φ ° | @line
+@text 9  | @code-page 5 | @text ë Ö ⌐ ╣ ╔ ┘ Θ ∙ | @line
+@text A  | @code-page 5 | @text è Ü ¬ ║ ╩ ┌ Ω · | @line
+@text B  | @code-page 5 | @text ï ø ½ ╗ ╦ █ δ √ | @line
+@text C  | @code-page 5 | @text î £ ¼ ╝ ╠ ▄ ∞ ⁿ | @line
+@text D  | @code-page 5 | @text ì Ø ¡ ╜ ═ ▌ φ ² | @line
+@text E  | @code-page 5 | @text Ä ₧ « ╛ ╬ ▐ ε ■ | @line
+@text F  | @code-page 5 | @text Å ƒ ¤ ┐ ╧ ▀ ∩   | @line
+
+PAGE 16 WPC1252
+   8 9 A B C D E F
+@text 0  | @code-page 16 | @text €     ° À Ð à ð | @line
+@text 1  | @code-page 16 | @text   ‘ ¡ ± Á Ñ á ñ | @line
+@text 2  | @code-page 16 | @text ‚ ’ ¢ ² Â Ò â ò | @line
+@text 3  | @code-page 16 | @text ƒ “ £ ³ Ã Ó ã ó | @line
+@text 4  | @code-page 16 | @text „ ” ¤ ´ Ä Ô ä ô | @line
+@text 5  | @code-page 16 | @text … • ¥ µ Å Õ å õ | @line
+@text 6  | @code-page 16 | @text † – ¦ ¶ Æ Ö æ ö | @line
+@text 7  | @code-page 16 | @text ‡ — § · Ç × ç ÷ | @line
+@text 8  | @code-page 16 | @text ˆ ˜ ¨ ¸ È Ø è ø | @line
+@text 9  | @code-page 16 | @text ‰ ™ © ¹ É Ù é ù | @line
+@text A  | @code-page 16 | @text Š š ª º Ê Ú ê ú | @line
+@text B  | @code-page 16 | @text ‹ › « » Ë Û ë û | @line
+@text C  | @code-page 16 | @text Œ œ ¬ ¼ Ì Ü ì ü | @line
+@text D  | @code-page 16 | @text     ­ ½ Í Ý í ý | @line
+@text E  | @code-page 16 | @text Ž ž ® ¾ Î Þ î þ | @line
+@text F  | @code-page 16 | @text   Ÿ ¯ ¿ Ï ß ï ÿ | @line
+
+PAGE 17 PC866
+   8 9 A B C D E F
+@text 0  | @code-page 17 | @text А Р а ░ └ ╨ р Ё | @line
+@text 1  | @code-page 17 | @text Б С б ▒ ┴ ╤ с ё | @line
+@text 2  | @code-page 17 | @text В Т в ▓ ┬ ╥ т Є | @line
+@text 3  | @code-page 17 | @text Г У г │ ├ ╙ у є | @line
+@text 4  | @code-page 17 | @text Д Ф д ┤ ─ ╘ ф Ї | @line
+@text 5  | @code-page 17 | @text Е Х е ╡ ┼ ╒ х ї | @line
+@text 6  | @code-page 17 | @text Ж Ц ж ╢ ╞ ╓ ц Ў | @line
+@text 7  | @code-page 17 | @text З Ч з ╖ ╟ ╫ ч ў | @line
+@text 8  | @code-page 17 | @text И Ш и ╕ ╚ ╪ ш ° | @line
+@text 9  | @code-page 17 | @text Й Щ й ╣ ╔ ┘ щ ∙ | @line
+@text A  | @code-page 17 | @text К Ъ к ║ ╩ ┌ ъ · | @line
+@text B  | @code-page 17 | @text Л Ы л ╗ ╦ █ ы √ | @line
+@text C  | @code-page 17 | @text М Ь м ╝ ╠ ▄ ь № | @line
+@text D  | @code-page 17 | @text Н Э н ╜ ═ ▌ э ¤ | @line
+@text E  | @code-page 17 | @text О Ю о ╛ ╬ ▐ ю ■ | @line
+@text F  | @code-page 17 | @text П Я п ┐ ╧ ▀ я   | @line
+
+PAGE 18 PC852
+   8 9 A B C D E F
+@text 0  | @code-page 18 | @text Ç É á ░ └ đ Ó ­ | @line
+@text 1  | @code-page 18 | @text ü Ĺ í ▒ ┴ Đ ß ˝ | @line
+@text 2  | @code-page 18 | @text é ĺ ó ▓ ┬ Ď Ô ˛ | @line
+@text 3  | @code-page 18 | @text â ô ú │ ├ Ë Ń ˇ | @line
+@text 4  | @code-page 18 | @text ä ö Ą ┤ ─ ď ń ˘ | @line
+@text 5  | @code-page 18 | @text ů Ľ ą Á ┼ Ň ň § | @line
+@text 6  | @code-page 18 | @text ć ľ Ž Â Ă Í Š ÷ | @line
+@text 7  | @code-page 18 | @text ç Ś ž Ě ă Î š ¸ | @line
+@text 8  | @code-page 18 | @text ł ś Ę Ş ╚ ě Ŕ ° | @line
+@text 9  | @code-page 18 | @text ë Ö ę ╣ ╔ ┘ Ú ¨ | @line
+@text A  | @code-page 18 | @text Ő Ü ¬ ║ ╩ ┌ ŕ ˙ | @line
+@text B  | @code-page 18 | @text ő Ť ź ╗ ╦ █ Ű ű | @line
+@text C  | @code-page 18 | @text î ť Č ╝ ╠ ▄ ý Ř | @line
+@text D  | @code-page 18 | @text Ź Ł ş Ż ═ Ţ Ý ř | @line
+@text E  | @code-page 18 | @text Ä × « ż ╬ Ů ţ ■ | @line
+@text F  | @code-page 18 | @text Ć č » ┐ ¤ ▀ ´   | @line
+
+PAGE 19 PC858
+   8 9 A B C D E F
+@text 0  | @code-page 19 | @text Ç É á ░ └ ð Ó ­ | @line
+@text 1  | @code-page 19 | @text ü æ í ▒ ┴ Ð ß ± | @line
+@text 2  | @code-page 19 | @text é Æ ó ▓ ┬ Ê Ô ‗ | @line
+@text 3  | @code-page 19 | @text â ô ú │ ├ Ë Ò ¾ | @line
+@text 4  | @code-page 19 | @text ä ö ñ ┤ ─ È õ ¶ | @line
+@text 5  | @code-page 19 | @text à ò Ñ Á ┼ € Õ § | @line
+@text 6  | @code-page 19 | @text å û ª Â ã Í µ ÷ | @line
+@text 7  | @code-page 19 | @text ç ù º À Ã Î þ ¸ | @line
+@text 8  | @code-page 19 | @text ê ÿ ¿ © ╚ Ï Þ ° | @line
+@text 9  | @code-page 19 | @text ë Ö ® ╣ ╔ ┘ Ú ¨ | @line
+@text A  | @code-page 19 | @text è Ü ¬ ║ ╩ ┌ Û · | @line
+@text B  | @code-page 19 | @text ï ø ½ ╗ ╦ █ Ù ¹ | @line
+@text C  | @code-page 19 | @text î £ ¼ ╝ ╠ ▄ ý ³ | @line
+@text D  | @code-page 19 | @text ì Ø ¡ ¢ ═ ¦ Ý ² | @line
+@text E  | @code-page 19 | @text Ä × « ¥ ╬ Ì ¯ ■ | @line
+@text F  | @code-page 19 | @text Å ƒ » ┐ ¤ ▀ ´   | @line
+
+@fi

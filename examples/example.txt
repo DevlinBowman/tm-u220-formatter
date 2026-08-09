@@ -1,0 +1,205 @@
+@align center | @font a | @emphasis on | @double-width on | @double-height on
+TM-U220
+@init | @align center
+PRINT CAPABILITY SHEET
+@align left
+@rule =
+
+@align center
+PC437 PRINTABLE CHARACTERS
+@code-page 0
+
+  0 @ P ` p Ç É á ░ └ ╨ α ≡
+! 1 A Q a q ü æ í ▒ ┴ ╤ ß ±
+" 2 B R b r é Æ ó ▓ ┬ ╥ Γ ≥
+# 3 C S c s â ô ú │ ├ ╙ π ≤
+$ 4 D T d t ä ö ñ ┤ ─ ╘ Σ ⌠
+% 5 E U e u à ò Ñ ╡ ┼ ╒ σ ⌡
+& 6 F V f v å û ª ╢ ╞ ╓ µ ÷
+' 7 G W g w ç ù º ╖ ╟ ╫ τ ≈
+( 8 H X h x ê ÿ ¿ ╕ ╚ ╪ Φ °
+) 9 I Y i y ë Ö ⌐ ╣ ╔ ┘ Θ ∙
+* : J Z j z è Ü ¬ ║ ╩ ┌ Ω ·
++ ; K [ k { ï ¢ ½ ╗ ╦ █ δ √
+, < L \ l | î £ ¼ ╝ ╠ ▄ ∞ ⁿ
+- = M ] m } ì ¥ ¡ ╜ ═ ▌ φ ²
+. > N ^ n ~ Ä ₧ « ╛ ╬ ▐ ε ■
+/ ? O _ o   Å ƒ » ┐ ╧ ▀ ∩
+
+@align left
+ALIGNMENT
+@align left
+LEFT EDGE
+@align center
+CENTERED
+@align right
+RIGHT EDGE
+@align left
+
+@rule -
+FONT FACES
+@font a
+FONT A 9X9  Aa Bb 0123
+@font b
+FONT B 7X9  Aa Bb 0123
+@init
+
+@rule -
+FONT A SIZE + EMPHASIS
+@font a
+A NORMAL 1X1
+@emphasis on
+A EMPH 1X1
+@emphasis off
+@double-height on
+A TALL 1X2
+@emphasis on
+A EMPH TALL 1X2
+@emphasis off
+@double-height off
+@double-width on
+A WIDE 2X1
+@emphasis on
+A EMPH WIDE
+@emphasis off
+@double-height on
+A BIG 2X2
+@emphasis on
+A EMPH BIG 2X2
+@init
+
+@rule -
+FONT B SIZE + EMPHASIS
+@font b
+B NORMAL 1X1
+@emphasis on
+B EMPH 1X1
+@emphasis off
+@double-height on
+B TALL 1X2
+@emphasis on
+B EMPH TALL 1X2
+@emphasis off
+@double-height off
+@double-width on
+B WIDE 2X1
+@emphasis on
+B EMPH WIDE
+@emphasis off
+@double-height on
+B BIG 2X2
+@emphasis on
+B EMPH BIG 2X2
+@init
+
+@rule -
+STRIKE + UNDERLINE
+@emphasis on
+EMPHASIZED
+@emphasis off
+@double-strike on
+DOUBLE-STRIKE
+@emphasis on
+EMPHASIZED + DOUBLE-STRIKE
+@emphasis off
+@double-strike off
+@underline single
+SINGLE UNDERLINE
+@underline double
+DOUBLE UNDERLINE
+@underline off
+
+@rule -
+MAXIMUM COMBINATION
+@font a | @emphasis on | @double-strike on | @double-width on | @double-height on | @underline double | @color red
+MAXIMUM
+@init
+
+@rule -
+RIBBON COLORS
+@color red
+RED RIBBON
+@color black
+BLACK RIBBON
+
+@rule -
+CHARACTER SPACING
+@spacing 0
+0  ABCDEFGHIJ
+@spacing 1
+1  ABCDEFGHIJ
+@spacing 2
+2  ABCDEFGHIJ
+@spacing 3
+3  ABCDEFGHIJ
+@spacing 4
+4  ABCDEFGHIJ
+@spacing 5
+5  ABCDEFGHIJ
+@spacing 6
+6  ABCDEFGHIJ
+@spacing 7
+7  ABCDEFGHIJ
+@init
+
+@rule -
+LINE SPACING
+@line-spacing 12
+12 UNITS - TIGHT
+18 UNITS - TIGHT
+@line-spacing 24
+24 UNITS - DEFAULT
+24 UNITS - DEFAULT
+@line-spacing 36
+36 UNITS - OPEN
+36 UNITS - OPEN
+@line-spacing default
+
+@rule -
+HORIZONTAL TABS
+@text 0 | @tab | @text 8 | @tab | @text 16 | @tab | @text 24 | @tab | @text 32 | @line
+
+EDGE-ALIGNED FIELDS
+@kv LEFT | RIGHT
+@kv SUBTOTAL | $12.00
+
+TABULATED FIELDS
+@table 9,4,4LR,3LR,8RR
+@bold
+@head Board | Spcs | Pcs | Grd | Ea
+@bold-off
+@row 2x4x16 | RW | | | $29.99
+@row 2x6x12 | RW | 20 | CH | $29.99
+@end-table
+
+@rule -
+ORIENTATION
+@align center
+@upside-down on
+180 DEGREE UPSIDE-DOWN
+@upside-down off
+NORMAL ORIENTATION
+@align left
+
+@rule -
+PAPER MOTION
+FORWARD MICRO-FEED
+@feed-units 12
+12 OF 144 INCH LOWER
+@reverse-units 12
+12 OF 144 INCH BACK
+@feed 1
+ONE BLANK LINE ABOVE
+
+TWO-PASS OVERPRINT
+BLACK + RED
+@reverse-lines 1
+@color red
+BLACK + RED
+@color black
+
+@rule =
+@align center
+CAPABILITY SHEET COMPLETE
+@align left
+@fi

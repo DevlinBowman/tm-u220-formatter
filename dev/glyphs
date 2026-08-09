@@ -1,0 +1,7 @@
+#!/bin/sh
+# Opens the checkout-only browser tool for refining preview glyph strike masks.
+# This launcher is deliberately excluded from the installed 220 command surface.
+set -eu
+
+script_dir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+exec node "$script_dir/glyph_editor/server/main.mjs" "$@"

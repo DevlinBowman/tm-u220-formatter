@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>U220 Preview</title>
+    <link rel="stylesheet" href="./styles/tokens.css">
+    <link rel="stylesheet" href="./styles/shell.css">
+    <link rel="stylesheet" href="./styles/receipt.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="app-bar">
+      <a class="brand" href="./" aria-label="U220 Preview home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>
+          <strong>U220 Preview</strong>
+          <small>Receipt workspace</small>
+        </span>
+      </a>
+
+      <nav class="file-actions" aria-label="File actions">
+        <button class="button button-secondary" id="open-button" type="button">
+          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M2.75 5.5A1.75 1.75 0 0 1 4.5 3.75h3l1.5 1.5h6.5A1.75 1.75 0 0 1 17.25 7v.75H6.1a2 2 0 0 0-1.83 1.2L2.75 12.4V5.5Z"/><path d="M2.9 15.25 5.65 9a.75.75 0 0 1 .69-.45h11.25l-2.67 6.08a1.75 1.75 0 0 1-1.6 1.04H3.18a.3.3 0 0 1-.28-.42Z"/></svg>
+          Open
+        </button>
+        <button class="button button-secondary" id="save-button" type="button">
+          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M3.5 3.5h10.86l2.14 2.14V16.5h-13v-13Z"/><path d="M6 3.5V8h7V3.5M6.5 16.5v-5h7v5"/></svg>
+          Save
+        </button>
+        <button class="button button-primary" id="save-copy-button" type="button">
+          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M6.5 2.75h7.86l2.14 2.14v10.36h-10V2.75Z"/><path d="M3.5 6.25v11h9.5M9 6.25h5M11.5 3.75v5"/></svg>
+          Save a copy
+        </button>
+      </nav>
+      <input id="file-input" type="file" accept=".u220,.txt,text/plain" hidden>
+    </header>
+
+    <main class="workspace">
+      <section class="panel editor-panel" aria-labelledby="editor-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Source</span>
+            <h1 id="editor-title"><span id="file-name">untitled.u220</span><i id="dirty-dot" aria-label="Unsaved changes" aria-hidden="true"></i></h1>
+          </div>
+          <div class="mode-switch" role="group" aria-label="Document mode">
+            <button class="mode-button is-active" type="button" data-mode="interpreted" aria-pressed="true">Interpreted</button>
+            <button class="mode-button" type="button" data-mode="plain" aria-pressed="false">Plain text</button>
+          </div>
+        </header>
+
+        <div class="editor-wrap">
+          <div class="editor-line-numbers" aria-hidden="true">
+            <div id="source-line-numbers"></div>
+          </div>
+          <textarea id="source-editor" aria-label="Receipt source" autocomplete="off" autocapitalize="off" spellcheck="false" wrap="off">!tm-u220 job 1
+@profile variant=B paper=76 dip2_1=off cutter=partial
+@align center
+@double-width on
+ALDER COFFEE
+@double-width off
+42 Market Street
+@align left
+
+@kv Espresso | $4.00
+@kv Oat milk | $0.75
+@rule -
+@kv TOTAL | $4.75
+
+@emphasis on
+Thank you!
+@emphasis off
+@fi</textarea>
+        </div>
+
+        <footer class="panel-footer editor-meta">
+          <span id="cursor-position">Ln 1, Col 1</span>
+          <span id="document-count">0 lines · 0 characters</span>
+          <span id="save-state">Not saved</span>
+        </footer>
+      </section>
+
+      <section class="panel preview-panel" aria-labelledby="preview-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Printer output</span>
+            <h2 id="preview-title">Live preview</h2>
+          </div>
+          <div class="preview-controls">
+            <div class="mode-switch preview-font-switch" role="group" aria-label="Preview appearance">
+              <button class="mode-button" type="button" data-preview-font="classic" aria-pressed="false">Baseline</button>
+              <button class="mode-button is-active" type="button" data-preview-font="strike" aria-pressed="true">9-pin</button>
+            </div>
+            <div class="render-state" id="render-state" data-tone="idle" role="status" aria-live="polite">
+              <span></span><b>Connecting</b>
+            </div>
+          </div>
+        </header>
+
+        <div class="preview-scroll" id="preview-scroll">
+          <div class="preview-stage">
+            <aside class="profile-card" id="profile-card" hidden>
+              <span id="profile-model">TM-U220</span>
+              <span id="profile-paper">76 mm</span>
+              <span id="profile-columns">40 columns</span>
+            </aside>
+            <article class="receipt" id="receipt" aria-label="Printed receipt preview">
+              <div class="receipt-lines" id="receipt-lines"></div>
+              <div class="receipt-placeholder" id="receipt-placeholder">
+                <span class="printer-glyph" aria-hidden="true"></span>
+                <strong>Preview is getting ready</strong>
+                <p>Your formatted receipt will appear here.</p>
+              </div>
+              <footer class="receipt-finish" id="receipt-finish" hidden></footer>
+            </article>
+          </div>
+        </div>
+
+        <section class="diagnostics" id="diagnostics" aria-labelledby="diagnostics-title">
+          <button class="diagnostics-heading" id="diagnostics-toggle" type="button" aria-expanded="false" aria-controls="diagnostics-list">
+            <span><i aria-hidden="true"></i><b id="diagnostics-title">Diagnostics</b></span>
+            <span class="diagnostics-count" id="diagnostics-count">0</span>
+          </button>
+          <ol class="diagnostics-list" id="diagnostics-list" hidden></ol>
+        </section>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

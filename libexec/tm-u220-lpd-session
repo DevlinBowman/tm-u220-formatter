@@ -1,0 +1,185 @@
+#!/usr/bin/perl
+# Submits one byte-string job over LPD and rotates reserved source ports only
+# until the server accepts the receive-job command; payload stages never retry.
+use strict;
+use warnings;
+use bytes;
+use FindBin;
+use IPC::Open3 qw(open3);
+use IO::Handle;
+use IO::Select;
+use Symbol qw(gensym);
+use lib "$FindBin::Bin/lpd_session";
+use PrintingPolicy qw(load_installed);
+
+use constant MAX_PAYLOAD => 1024 * 1024;
+use constant ACK_TIMEOUT => 6;
+my $POLICY = eval { load_installed() };
+die "cannot load installed printing policy: $@" unless $POLICY;
+
+$SIG{PIPE} = 'IGNORE';
+binmode(STDIN, ':raw');
+binmode(STDOUT, ':raw');
+STDOUT->autoflush(1);
+
+sub stop {
+    my ($code, $stage, $ack, $count, $message, $source_port, $status, $detail) = @_;
+    print STDERR $detail if defined $detail && $detail ne '';
+    print STDOUT "error code=$code stage=$stage ack=$ack "
+        . "acks=$count message=$message source_port=$source_port\n";
+    exit $status;
+}
+
+sub read_payload {
+    my $payload = '';
+    while (1) {
+        my $read = sysread(STDIN, my $chunk, 65536);
+        stop('input', 'payload', 'none', 0, 'input_read_failed', 0, 2)
+            unless defined $read;
+        last if $read == 0;
+        $payload .= $chunk;
+        stop('input', 'payload', 'none', 0, 'payload_too_large', 0, 2)
+            if length($payload) > MAX_PAYLOAD;
+    }
+    stop('input', 'payload', 'none', 0, 'empty_payload', 0, 2)
+        if length($payload) == 0;
+    return $payload;
+}
+
+sub try_write_all {
+    my ($handle, $value) = @_;
+    my $offset = 0;
+    while ($offset < length($value)) {
+        my $written = syswrite($handle, $value, length($value) - $offset, $offset);
+        return (0, 'write_failed') unless defined $written && $written > 0;
+        $offset += $written;
+    }
+    return (0, 'flush_failed') unless $handle->flush;
+    return (1, undef);
+}
+
+sub try_receive_ack {
+    my ($handle, $selector) = @_;
+    my @ready = $selector->can_read(ACK_TIMEOUT);
+    return (0, 'none', 'ack_timeout') unless @ready;
+    my $read = sysread($handle, my $ack, 1);
+    return (0, 'none', 'ack_read_failed') unless defined $read;
+    return (0, 'none', 'ack_eof') unless $read == 1;
+    my $value = ord($ack);
+    return (0, $value, 'negative_ack') unless $value == 0;
+    return (1, 0, undef);
+}
+
+sub open_connection {
+    my ($source_port) = @_;
+    my ($reader, $writer);
+    my $error = gensym;
+    my $pid = eval {
+        open3($writer, $reader, $error, '/usr/bin/sudo', '-n', '--', '/usr/bin/nc',
+            '-w', "$POLICY->{timeout}", '-p', "$source_port",
+            $POLICY->{host}, "$POLICY->{destination_port}");
+    };
+    return (undef, $@ || 'session start failed') unless defined $pid;
+    binmode($reader, ':raw');
+    binmode($writer, ':raw');
+    binmode($error, ':raw');
+    $writer->autoflush(1);
+    return ({ reader => $reader, writer => $writer, error => $error, pid => $pid,
+        selector => IO::Select->new($reader), source_port => $source_port }, undef);
+}
+
+sub close_connection {
+    my ($session) = @_;
+    close($session->{writer});
+    close($session->{reader});
+    my $detail = '';
+    while (1) {
+        my $read = sysread($session->{error}, my $chunk, 4096);
+        last unless defined $read && $read > 0;
+        $detail .= $chunk;
+    }
+    close($session->{error});
+    waitpid($session->{pid}, 0);
+    return $detail;
+}
+
+sub begin_job {
+    my ($source_port) = @_;
+    my ($session, $open_error) = open_connection($source_port);
+    return (undef, { code => 'lpd_unknown', ack => 'none',
+        message => 'session_start_failed', detail => $open_error }) unless $session;
+    my ($written, $write_error) = try_write_all(
+        $session->{writer}, "\x02$POLICY->{queue}\n");
+    unless ($written) {
+        my $detail = close_connection($session);
+        return (undef, { code => 'lpd_unknown', ack => 'none',
+            message => $write_error, detail => $detail });
+    }
+    my ($accepted, $ack, $ack_error) = try_receive_ack(
+        $session->{reader}, $session->{selector});
+    unless ($accepted) {
+        my $detail = close_connection($session);
+        return (undef, { code => $ack eq 'none' ? 'lpd_unknown' : 'lpd_rejected',
+            ack => $ack, message => $ack_error, detail => $detail });
+    }
+    return ($session, undef);
+}
+
+my $payload = read_payload();
+my $job_id = sprintf('%03d', $$ % 1000);
+my $data_name = "dfA${job_id}tm-u220";
+my $control_name = "cfA${job_id}tm-u220";
+my $control = "Htm-u220\nPtm-u220\nl$data_name\nU$data_name\nNtm-u220\n";
+my @stages = (
+    [control_header => "\x02" . length($control) . " $control_name\n"],
+    [control_body => $control . "\x00"],
+    [data_header => "\x03" . length($payload) . " $data_name\n"],
+    [data_body => $payload . "\x00"],
+);
+
+my @source_ports = @{$POLICY->{source_ports}};
+my $offset = $$ % scalar(@source_ports);
+my ($session, $last_failure, $last_port);
+for my $index (0 .. $#source_ports) {
+    my $source_port = $source_ports[($offset + $index) % scalar(@source_ports)];
+    my $failure;
+    ($session, $failure) = begin_job($source_port);
+    if ($session) {
+        $last_port = $source_port;
+        last;
+    }
+    if ($failure->{code} eq 'lpd_rejected') {
+        stop($failure->{code}, 'receive_job', $failure->{ack}, 1,
+            $failure->{message}, $source_port, 40, $failure->{detail});
+    }
+    $last_failure = $failure;
+    $last_port = $source_port;
+}
+stop('lpd_unknown', 'receive_job', 'none', 0,
+    $last_failure->{message}, $last_port, 41, $last_failure->{detail})
+    unless $session;
+
+my $ack_count = 1;
+for my $stage (@stages) {
+    my ($written, $write_error) = try_write_all($session->{writer}, $stage->[1]);
+    unless ($written) {
+        my $detail = close_connection($session);
+        stop('lpd_unknown', $stage->[0], 'none', $ack_count,
+            $write_error, $last_port, 41, $detail);
+    }
+    my ($accepted, $ack, $ack_error) = try_receive_ack(
+        $session->{reader}, $session->{selector});
+    unless ($accepted) {
+        my $detail = close_connection($session);
+        my $rejected = $ack ne 'none';
+        stop($rejected ? 'lpd_rejected' : 'lpd_unknown', $stage->[0], $ack,
+            $ack_count + ($rejected ? 1 : 0), $ack_error, $last_port,
+            $rejected ? 40 : 41, $detail);
+    }
+    $ack_count++;
+}
+
+close_connection($session);
+print STDOUT 'ok bytes=' . length($payload)
+    . " acks=$ack_count source_port=$last_port\n";
+exit 0;

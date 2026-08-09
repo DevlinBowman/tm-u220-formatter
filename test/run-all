@@ -1,0 +1,17 @@
+#!/bin/sh
+# Runs every repository test domain through the same release-gate entry point.
+# Hardware and privileged operations remain replaced by the suites' injected adapters.
+set -eu
+
+script_dir=$(CDPATH= cd -P "$(dirname "$0")" && pwd)
+project_root=$(cd "$script_dir/.." && pwd)
+cd "$project_root"
+
+lua test/run.lua
+node --test test/cli/*.test.mjs
+node --test test/configuration/*.test.mjs
+node --test test/install/*.test.mjs
+node --test test/live_session/*.test.mjs
+node --test test/printing_setup/*.test.mjs
+node --test test/printing_removal/*.test.mjs
+node --test web/test/*.test.mjs

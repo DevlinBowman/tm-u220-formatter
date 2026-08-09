@@ -1,0 +1,166 @@
+<!doctype html>
+<!-- Provides an isolated developer workspace for editing web-preview glyph masks. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>U220 Glyph Editor</title>
+    <link rel="stylesheet" href="/assets/tokens.css">
+    <link rel="stylesheet" href="/assets/shell.css">
+    <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="./geometry.css">
+    <link rel="stylesheet" href="./appearance.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="app-bar">
+      <a class="brand" href="./" aria-label="U220 Glyph Editor home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>
+          <strong>U220 Glyph Editor</strong>
+          <small>Preview development</small>
+        </span>
+      </a>
+
+      <nav class="file-actions" aria-label="Glyph actions">
+        <a class="button button-secondary" href="/preview/">Receipt preview</a>
+        <button class="button button-secondary" id="revert-button" type="button">Revert draft</button>
+        <button class="button button-primary" id="save-button" type="button">Save glyph</button>
+      </nav>
+    </header>
+
+    <main class="workspace glyph-workspace">
+      <section class="panel glyph-catalog-panel" aria-labelledby="catalog-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Preview atlas</span>
+            <h1 id="catalog-title">Printable ASCII</h1>
+          </div>
+          <div class="mode-switch" role="group" aria-label="Printer font">
+            <button class="mode-button" type="button" data-font="a" aria-pressed="false">Font A</button>
+            <button class="mode-button is-active" type="button" data-font="b" aria-pressed="true">Font B</button>
+          </div>
+        </header>
+
+        <div class="catalog-body">
+          <p class="scope-note">Select a character, then toggle its strike positions. Dots mark unsaved glyph drafts.</p>
+          <div class="glyph-catalog" id="glyph-catalog" role="listbox" aria-label="Printable ASCII glyphs"></div>
+        </div>
+
+        <footer class="panel-footer glyph-catalog-meta">
+          <span>95 preview glyphs</span>
+          <span id="draft-count">No drafts</span>
+        </footer>
+      </section>
+
+      <section class="panel glyph-editor-panel" aria-labelledby="glyph-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Dot structure</span>
+            <h2 id="glyph-title">Font B · A</h2>
+          </div>
+          <span class="glyph-metrics" id="glyph-metrics">ASCII 65 · 7 half-dot positions × 9 pins</span>
+        </header>
+
+        <div class="glyph-editor-body">
+          <section class="matrix-section" aria-labelledby="matrix-title">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Editable lattice</span>
+                <h3 id="matrix-title">Strike positions</h3>
+              </div>
+              <button class="button button-secondary compact-button" id="clear-button" type="button">Clear</button>
+            </div>
+            <div class="dot-grid" id="dot-grid" role="grid" aria-label="Editable glyph dot matrix" aria-describedby="matrix-help authoring-baseline-guide alignment-guide"></div>
+            <p class="matrix-help" id="matrix-help">Each active cell is one full pin impact. Columns are 1/160-inch horizontal half-dot positions, so adjacent impacts overlap. Rows are the nine fixed 1/72-inch print-head pins; every row and column remains usable glyph data.</p>
+            <p class="authoring-baseline-guide" id="authoring-baseline-guide">
+              <span aria-hidden="true"></span>
+              <span id="authoring-baseline-guide-copy">Font B authoring baseline after pin 8. Epson defines no internal baseline; this is our reconstruction convention.</span>
+            </p>
+            <p class="alignment-guide" id="alignment-guide">
+              <span aria-hidden="true"></span>
+              <span id="alignment-guide-copy">Epson matrix bottom · shared line alignment after pin 9</span>
+            </p>
+
+            <section class="geometry-guide" aria-labelledby="geometry-title">
+              <div class="geometry-guide-heading">
+                <div>
+                  <span class="eyebrow">Cell geometry</span>
+                  <h4 id="geometry-title">Matrix and printer spacing</h4>
+                </div>
+                <div class="mode-switch" role="group" aria-label="Base character spacing shown in study">
+                  <button class="mode-button" type="button" data-study-spacing="2" aria-pressed="false">2 half-dot positions</button>
+                  <button class="mode-button is-active" type="button" data-study-spacing="3" aria-pressed="true">3 half-dot positions</button>
+                </div>
+              </div>
+              <div class="geometry-diagram" id="geometry-diagram" role="img" aria-label="Glyph matrix followed by separate horizontal and vertical printer spacing">
+                <div class="geometry-cell" aria-hidden="true"><i></i><span id="geometry-cell-label">7 × 9 glyph matrix</span></div>
+                <div class="geometry-x-spacing" aria-hidden="true"><span id="geometry-spacing-label">+3 half-dot positions · character spacing</span></div>
+                <div class="geometry-y-spacing" aria-hidden="true"><span id="geometry-line-spacing-label">+6 feed units · line spacing outside matrix</span></div>
+                <div class="geometry-corner" aria-hidden="true"></div>
+              </div>
+              <p class="geometry-help" id="geometry-help">Every position stays inside the fixed glyph cell. Base character spacing sits to its right, and the remainder of the default line spacing sits below it; neither is saved in a mask. ESC SP adds more character spacing.</p>
+            </section>
+          </section>
+
+          <section class="study-section" aria-labelledby="study-title">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Receipt study</span>
+                <h3 id="study-title">Comparison text</h3>
+              </div>
+              <button class="button button-secondary compact-button" id="restore-button" type="button">Restore on-open</button>
+            </div>
+            <label class="study-text-field" for="study-text">
+              <span>Comparison text</span>
+              <input id="study-text" type="text" value="Street" maxlength="32" autocomplete="off" spellcheck="false" aria-describedby="study-text-help">
+              <small id="study-text-help">Printable ASCII, up to 32 characters. The active glyph is always shown first.</small>
+            </label>
+            <div class="paper-study" aria-label="Receipt-style glyph preview">
+              <canvas class="glyph-study" id="glyph-study" aria-describedby="study-context"></canvas>
+            </div>
+            <p class="study-context" id="study-context">Comparison text · selected glyph drafts update live · 3-position character spacing</p>
+            <div class="impact-settings" aria-labelledby="impact-title">
+              <div class="impact-settings-heading">
+                <div>
+                  <span class="eyebrow">Global preview ink</span>
+                  <h4 id="impact-title">Dot diameter</h4>
+                </div>
+                <div class="mode-switch" role="group" aria-label="Strike study mode">
+                  <button class="mode-button is-active" type="button" data-strike-mode="single" aria-pressed="true">Single</button>
+                  <button class="mode-button" type="button" data-strike-mode="double" aria-pressed="false">Double</button>
+                </div>
+              </div>
+              <label class="size-control" for="single-dot-size">
+                <span>Single strike</span><output id="single-dot-value">0.28 mm</output>
+                <input id="single-dot-size" data-dot-size="single" type="range" min="0.10" max="0.60" step="0.01">
+              </label>
+              <label class="size-control" for="double-dot-size">
+                <span>Double strike</span><output id="double-dot-value">0.28 mm</output>
+                <input id="double-dot-size" data-dot-size="double" type="range" min="0.10" max="0.60" step="0.01">
+              </label>
+              <div class="size-actions">
+                <button class="button button-secondary compact-button" id="revert-sizes-button" type="button">Revert sizes</button>
+                <button class="button button-primary compact-button" id="save-sizes-button" type="button">Save dot sizes</button>
+              </div>
+              <p class="size-state" id="size-state">Global preview sizes are saved</p>
+            </div>
+            <label class="pattern-field" for="pattern-output">
+              <span>Atlas pattern</span>
+              <textarea id="pattern-output" rows="3" readonly spellcheck="false"></textarea>
+            </label>
+            <button class="button button-secondary copy-button" id="copy-button" type="button">Copy pattern</button>
+          </section>
+        </div>
+
+        <footer class="panel-footer glyph-boundary">
+          <span id="save-state">Preview atlas unchanged</span>
+          <span>Writes only the selected Font A/B preview mask</span>
+        </footer>
+      </section>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

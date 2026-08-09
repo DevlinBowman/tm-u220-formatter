@@ -1,0 +1,7 @@
+.DS_Store
+receipt.bin
+tmp/
+*.swp
+*.swo
+*~
+native/macos/lpd_submit/build/

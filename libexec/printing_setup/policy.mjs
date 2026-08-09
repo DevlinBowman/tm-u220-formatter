@@ -1,0 +1,27 @@
+// Presents the canonical printing-policy core through the setup module's stable import path.
+// Setup, review, audit, and runtime consumers must derive machine state from this shared API.
+export {
+  artifactPolicy,
+  captureCurrentIdentity,
+  commandText,
+  createManifest,
+  createPrintingPolicy,
+  LEGACY_TOMBSTONE_DESTINATION,
+  loadInstalledManifest,
+  loadInstalledPolicy,
+  loadInstalledPrintingPolicy,
+  loadSelectedProfile,
+  MANIFEST_DESTINATION,
+  PACKAGE_ID,
+  PACKAGE_NAME,
+  parseManifest,
+  parseProfile,
+  printingPolicy,
+  PROFILE_DESTINATION,
+  renderLegacyTombstone,
+  renderSudoers,
+  reviewText,
+  sha256,
+  SUDOERS_DESTINATION as DESTINATION,
+  validatePrinterIPv4,
+} from "../printing_policy/index.mjs";

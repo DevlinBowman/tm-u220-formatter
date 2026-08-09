@@ -1,0 +1,54 @@
+# Runs the public release gate on the macOS platform the formatter supports.
+# The job installs only the two declared language runtimes and never contacts printer hardware.
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20.11.1
+          package-manager-cache: false
+
+      - name: Set up Lua
+        run: brew install lua
+
+      - name: Check whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --check "$BASE_SHA" "$CURRENT_SHA"
+          elif [[ -n "$BEFORE_SHA" && "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            git diff --check "$BEFORE_SHA" "$CURRENT_SHA"
+          else
+            git show --check --format= "$CURRENT_SHA"
+          fi
+
+      - name: Run release test suite
+        run: test/run-all
+
+      - name: Exercise public entry points
+        run: |
+          bin/tm-u220 version
+          bin/tm-u220 help
+          install/tm-u220 manifest

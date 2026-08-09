@@ -1,0 +1,148 @@
+/* Shows the authoring baseline plus printer-owned alignment and spacing around the mask. */
+/* These guides reuse existing tokens and never alter saved atlas data. */
+.dot-cell[data-alignment-edge="true"]::before {
+  position: absolute;
+  right: -3px;
+  bottom: -5px;
+  left: -3px;
+  border-bottom: 2px dashed var(--warning);
+  content: "";
+  pointer-events: none;
+}
+
+.dot-cell[data-authoring-baseline="true"]::before {
+  position: absolute;
+  right: -3px;
+  bottom: -4px;
+  left: -3px;
+  border-bottom: 2px solid var(--accent-hover);
+  content: "";
+  pointer-events: none;
+}
+
+.authoring-baseline-guide,
+.alignment-guide {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 11px 0 0;
+  color: var(--ink-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.authoring-baseline-guide > span:first-child,
+.alignment-guide > span:first-child {
+  width: 24px;
+  flex: 0 0 auto;
+  margin-top: 7px;
+}
+
+.authoring-baseline-guide > span:first-child { border-top: 2px solid var(--accent-hover); }
+.alignment-guide > span:first-child { border-top: 2px dashed var(--warning); }
+
+.geometry-guide {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas-soft);
+}
+
+.geometry-guide-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.geometry-guide-heading h4 { margin: 0; font-size: 13px; font-weight: 680; }
+.geometry-guide-heading .mode-button { min-width: 54px; }
+
+.geometry-diagram {
+  height: 112px;
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font: 9px/1.35 var(--mono);
+}
+
+.geometry-diagram > div {
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 5px;
+  text-align: center;
+}
+
+.geometry-cell {
+  position: relative;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 2px dashed var(--warning);
+  background: var(--panel-strong);
+  color: var(--ink);
+}
+
+.geometry-cell i {
+  position: absolute;
+  top: var(--authoring-baseline-position);
+  right: 0;
+  left: 0;
+  border-top: 2px solid var(--accent-hover);
+}
+
+.geometry-x-spacing { background: var(--warning-soft); color: var(--warning); }
+.geometry-y-spacing { background: var(--accent-soft); color: var(--accent-hover); }
+.geometry-corner { background: color-mix(in srgb, var(--warning-soft), var(--accent-soft)); }
+
+.geometry-help,
+.study-context {
+  margin: 9px 0 0;
+  color: var(--ink-faint);
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.study-context { text-align: center; }
+
+.study-text-field {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.study-text-field span {
+  color: var(--ink-faint);
+  font-size: 9px;
+  font-weight: 760;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.study-text-field small {
+  color: var(--ink-faint);
+  font-size: 9px;
+}
+
+.study-text-field input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: 0;
+  background: var(--canvas-soft);
+  color: var(--ink);
+  font: 11px/1.4 var(--mono);
+}
+
+.study-text-field input:focus-visible {
+  outline: 3px solid rgb(77 155 112 / 35%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .geometry-guide-heading { align-items: flex-start; flex-direction: column; }
+  .geometry-guide-heading .mode-switch { width: 100%; }
+}

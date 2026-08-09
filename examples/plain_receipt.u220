@@ -1,0 +1,18 @@
+!tm-u220 job 1
+@profile variant=B paper=76 dip2_1=off cutter=partial
+@align center
+@double-width on
+ALDER COFFEE
+@double-width off
+42 Market Street
+@align left
+
+@kv Espresso | $4.00
+@kv Oat milk | $0.75
+@rule -
+@kv TOTAL | $4.75
+
+@emphasis on
+Thank you!
+@emphasis off
+@fi

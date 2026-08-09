@@ -1,0 +1,19 @@
+TM-U220 Formatter
+Copyright 2026 DevlinBowman and contributors
+
+This software is an independent compatibility project. It is not affiliated
+with, endorsed by, sponsored by, or supported by Seiko Epson Corporation or
+Epson America, Inc.
+
+EPSON is a registered trademark of Seiko Epson Corporation. ESC/POS is a
+registered trademark or trademark of Seiko Epson Corporation. TM-U220 and
+other product names are used solely to identify compatibility. All trademarks
+remain the property of their respective owners.
+
+The MIT License applies only to material this project's contributors are
+authorized to license. It does not grant rights in Epson trademarks, patents,
+documentation, software, firmware, logos, or resident-ROM font data.
+
+This distribution includes character mapping data derived from Unicode, Inc.
+mapping files and provided under the Unicode License V3. See
+LICENSES/Unicode-3.0.txt and THIRD_PARTY_NOTICES.md.

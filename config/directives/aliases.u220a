@@ -1,0 +1,35 @@
+!tm-u220 aliases 1
+
+# Actions and argument-forwarding names.
+@cut == @cut installed
+@cut * == @cut *
+@lf * == @feed *
+
+# Alignment.
+@left == @align left
+@center == @align center
+@right == @align right
+
+# Weight, face, and ribbon color.
+@bold == @emphasis on
+@bold * == @emphasis *
+@bold-off == @emphasis off
+@font-a == @font a
+@font-b == @font b
+@black == @color black
+@red == @color red
+
+# Absolute size presets set both dimensions.
+@normal-size == @double-width off | @double-height off
+@wide == @double-width on | @double-height off
+@tall == @double-width off | @double-height on
+@large == @double-width on | @double-height on
+
+# Underline conveniences and canonical argument pass-through.
+@underline == @underline single
+@underline * == @underline *
+@underline-double == @underline double
+@underline-off == @underline off
+@ul == @underline single
+@ul-double == @underline double
+@ul-off == @underline off

@@ -1,0 +1,181 @@
+/* Extends the existing shell components with the minimum layout needed for dot-mask editing. */
+.glyph-workspace {
+  grid-template-columns: minmax(330px, .72fr) minmax(520px, 1.28fr);
+}
+
+.glyph-catalog-panel { min-width: 330px; }
+.glyph-editor-panel { min-width: 520px; }
+
+.catalog-body {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  background: var(--editor-surface);
+}
+
+.scope-note,
+.matrix-help {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.scope-note { margin-bottom: 14px; }
+
+.glyph-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+  gap: 5px;
+}
+
+.glyph-button {
+  aspect-ratio: 1;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel);
+  color: var(--ink-muted);
+  cursor: pointer;
+  font: 12px/1 var(--mono);
+}
+
+.glyph-button:hover { border-color: var(--line-strong); background: var(--button-hover); color: var(--ink); }
+.glyph-button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+.glyph-button[data-dirty="true"]::after {
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border-radius: 50%;
+  background: var(--warning);
+  content: "";
+}
+
+.glyph-catalog-meta { justify-content: space-between; }
+.glyph-metrics { color: var(--ink-muted); font: 10px/1.4 var(--mono); white-space: nowrap; }
+
+.glyph-editor-body {
+  min-height: 0;
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(300px, .92fr) minmax(250px, 1.08fr);
+  overflow: auto;
+  background: var(--editor-surface);
+}
+
+.matrix-section,
+.study-section { min-width: 0; padding: 22px; }
+.matrix-section { border-right: 1px solid var(--line); }
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-heading h3 { margin: 0; font-size: 14px; font-weight: 680; }
+.compact-button { min-height: 30px; padding-inline: 10px; font-size: 10px; }
+
+.dot-grid {
+  --glyph-columns: 7;
+  width: min(100%, calc(var(--glyph-columns) * 42px));
+  display: grid;
+  grid-template-columns: repeat(var(--glyph-columns), minmax(26px, 1fr));
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--canvas-soft);
+  touch-action: none;
+  user-select: none;
+}
+
+.half-dot-label {
+  padding-bottom: 3px;
+  color: var(--ink-faint);
+  font: 9px/1 var(--mono);
+  text-align: center;
+}
+
+.half-dot-label[data-half-offset="true"] { color: var(--warning); }
+
+.dot-cell {
+  aspect-ratio: 1;
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--panel-strong);
+  cursor: crosshair;
+}
+
+.dot-cell::after {
+  width: 34%;
+  height: 34%;
+  position: absolute;
+  inset: 33%;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  content: "";
+  opacity: .22;
+}
+
+.dot-cell[data-active="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.dot-cell[data-active="true"]::after { background: var(--accent-hover); opacity: 1; box-shadow: 0 0 0 3px rgb(77 155 112 / 13%); }
+.dot-cell[data-half-offset="true"]:not([data-active="true"]) { background: var(--warning-soft); }
+.matrix-help { margin-top: 12px; }
+
+.paper-study {
+  min-height: 210px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid var(--paper-edge);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+}
+
+.glyph-study { width: 100%; height: 180px; display: block; }
+
+.pattern-field { display: grid; gap: 7px; margin-top: 18px; }
+.pattern-field span { color: var(--ink-faint); font-size: 9px; font-weight: 760; letter-spacing: .1em; text-transform: uppercase; }
+.pattern-output,
+#pattern-output {
+  width: 100%;
+  resize: none;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  outline: 0;
+  background: var(--canvas-soft);
+  color: var(--ink-muted);
+  font: 10px/1.5 var(--mono);
+}
+.copy-button { width: 100%; margin-top: 8px; }
+.glyph-boundary { justify-content: space-between; gap: 16px; }
+.glyph-boundary span:last-child { color: var(--ink-faint); text-align: right; }
+.button:disabled { cursor: default; opacity: .44; transform: none; }
+
+@media (max-width: 980px) {
+  .glyph-editor-body { grid-template-columns: 1fr; }
+  .matrix-section { border-right: 0; border-bottom: 1px solid var(--line); }
+}
+
+@media (max-width: 880px) {
+  .glyph-catalog-panel,
+  .glyph-editor-panel { min-width: 0; }
+  .glyph-editor-panel { min-height: 760px; }
+}
+
+@media (max-width: 600px) {
+  .glyph-metrics { white-space: normal; }
+  .matrix-section,
+  .study-section { padding: 16px; }
+  .glyph-boundary span:last-child { display: none; }
+}
