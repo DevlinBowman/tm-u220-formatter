@@ -1,3 +1,5 @@
+-- Encodes validated command arguments, including length-delimited binary payloads.
+-- Binary values remain byte strings so embedded controls are never reinterpreted.
 local bytes = require("tm_u220.core.bytes")
 local conditions = require("tm_u220.escpos.conditions")
 
@@ -14,6 +16,21 @@ local function encode_u8(argument, value)
             .. (argument.min or 0) .. ".." .. (argument.max or 255)
     end
     return string.char(value)
+end
+
+local function dependent_maximum(argument, values, fallback)
+    local rule = argument.max_by
+    if not rule then return argument.max or fallback end
+    return rule.values[values[rule.arg]] or argument.max or fallback
+end
+
+local function encode_u16le(argument, value, values)
+    local maximum = dependent_maximum(argument, values, 65535)
+    if not integer_in_range(value, argument.min or 0, maximum) then
+        return nil, argument.name .. " must be an integer in range "
+            .. (argument.min or 0) .. ".." .. maximum
+    end
+    return string.char(value & 0xFF, (value >> 8) & 0xFF)
 end
 
 local function encode_enum(argument, value)
@@ -86,12 +103,29 @@ local function encode_list(argument, value)
     return bytes.from_array(value) .. string.char(argument.terminator)
 end
 
+local function encode_counted_bytes(argument, value, values)
+    if type(value) ~= "string" then
+        return nil, argument.name .. " must be a byte string"
+    end
+    local count = values[argument.count_from]
+    if not integer_in_range(count, 0, 65535) then
+        return nil, argument.name .. " has an invalid count source"
+    end
+    local expected = count * (argument.multiplier or 1)
+    if #value ~= expected then
+        return nil, argument.name .. " must contain exactly " .. expected .. " bytes"
+    end
+    return value
+end
+
 local encoders = {
     u8 = encode_u8,
+    u16le = encode_u16le,
     enum = encode_enum,
     lsb_boolean = encode_lsb_boolean,
     bitfield = encode_bitfield,
     terminated_u8_list = encode_list,
+    counted_bytes = encode_counted_bytes,
 }
 
 function M.encode(command, values)
@@ -111,7 +145,7 @@ function M.encode(command, values)
         elseif applies then
             local encoder = encoders[argument.type]
             if not encoder then return nil, "unsupported argument type " .. argument.type end
-            local encoded, err = encoder(argument, value)
+            local encoded, err = encoder(argument, value, values)
             if not encoded then return nil, err end
             out[#out + 1] = encoded
         end

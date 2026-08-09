@@ -1,3 +1,5 @@
+-- Decodes command arguments using their declared byte lengths and dependencies.
+-- Counted payloads consume opaque bytes, including bytes that resemble ESC/POS controls.
 local conditions = require("tm_u220.escpos.conditions")
 
 local M = {}
@@ -21,6 +23,19 @@ local function decode_u8(argument, data, cursor)
         return failure("invalid", argument.name .. " is outside its byte range", cursor + 1)
     end
     return byte, next_value
+end
+
+local function decode_u16le(argument, data, cursor)
+    local low, next_value = read_byte(argument, data, cursor)
+    if not low then return nil, next_value end
+    local high
+    high, next_value = read_byte(argument, data, next_value)
+    if not high then return nil, next_value end
+    local value = low + high * 256
+    if value < (argument.min or 0) or value > (argument.max or 65535) then
+        return failure("invalid", argument.name .. " is outside its byte range", cursor + 2)
+    end
+    return value, next_value
 end
 
 local function decode_enum(argument, data, cursor)
@@ -82,13 +97,41 @@ local function decode_list(argument, data, cursor)
     return failure("truncated", "missing terminator for " .. argument.name, #data + 1)
 end
 
+local function decode_counted_bytes(argument, data, cursor, values)
+    local count = values[argument.count_from]
+    if type(count) ~= "number" or count % 1 ~= 0 or count < 0 then
+        return failure("invalid", argument.name .. " has an invalid count source", cursor)
+    end
+    local expected = count * (argument.multiplier or 1)
+    local last = cursor + expected - 1
+    if last > #data then
+        return failure("truncated", "missing bytes for " .. argument.name, #data + 1)
+    end
+    return data:sub(cursor, last), last + 1
+end
+
 local decoders = {
     u8 = decode_u8,
+    u16le = decode_u16le,
     enum = decode_enum,
     lsb_boolean = decode_lsb_boolean,
     bitfield = decode_bitfield,
     terminated_u8_list = decode_list,
+    counted_bytes = decode_counted_bytes,
 }
+
+local function validate_dependent_bounds(command, values, cursor)
+    for _, argument in ipairs(command.args) do
+        local rule = argument.max_by
+        local maximum = rule and rule.values[values[rule.arg]]
+        local value = values[argument.name]
+        if maximum and type(value) == "number" and value > maximum then
+            return failure("invalid",
+                argument.name .. " is outside its mode-dependent range", cursor)
+        end
+    end
+    return values, cursor
+end
 
 function M.decode(command, data, cursor)
     local values = {}
@@ -99,13 +142,13 @@ function M.decode(command, data, cursor)
                 return nil, { kind = "invalid", message = "unsupported argument type " .. argument.type,
                     next_cursor = cursor }
             end
-            local value, next_value = decoder(argument, data, cursor)
+            local value, next_value = decoder(argument, data, cursor, values)
             if value == nil then return nil, next_value end
             values[argument.name] = value
             cursor = next_value
         end
     end
-    return values, cursor
+    return validate_dependent_bounds(command, values, cursor)
 end
 
 return M

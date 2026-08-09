@@ -1,3 +1,5 @@
+-- Builds the closed TM-U220 command registry and exposes canonical model facts.
+-- Feature command families enter the byte codec only through this validated index.
 local model = require("tm_u220.spec.model")
 local profile = require("tm_u220.spec.profile")
 
@@ -6,6 +8,7 @@ local families = {
     require("tm_u220.spec.commands.style"),
     require("tm_u220.spec.commands.position"),
     require("tm_u220.spec.commands.print"),
+    require("tm_u220.spec.commands.bit_image"),
     require("tm_u220.spec.commands.mechanism"),
 }
 
