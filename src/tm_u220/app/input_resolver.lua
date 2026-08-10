@@ -8,6 +8,7 @@ local StringInput = require("tm_u220.app.string_input")
 
 local M = {}
 local HEADER = "!tm-u220 job 1"
+local IMAGE_PREFIX_BYTES = 8
 
 local function failure(code, message)
     return Diagnostics.new(code, message)
@@ -99,6 +100,26 @@ local function resolve_content(content, path, mode, options)
     }
 end
 
+local function resolved_image(value, image_format, options)
+    return {
+        input_kind = "image",
+        image_format = image_format,
+        image_reference = ImageInput.reference(value),
+        path = value,
+        profile_path = options.profile_path or Defaults.profile_path(),
+    }
+end
+
+local function unreadable_path(value, read_error)
+    local code = looks_like_job_path(value)
+        and "INPUT_JOB_READ_FAILED" or "INPUT_FILE_READ_FAILED"
+    local hint = value:sub(1, 2) == "~/"
+        and '; use an unquoted ~ or "$HOME/..." for your home directory'
+        or ""
+    return failure(code,
+        "cannot use input file " .. value .. ": " .. tostring(read_error) .. hint)
+end
+
 function M.resolve(value, options)
     options = options or {}
     if type(value) ~= "string" then
@@ -111,25 +132,25 @@ function M.resolve(value, options)
     if not mode then return nil, failure("INPUT_STRING_TYPE_INVALID", mode_error) end
     if explicit then return resolve_content(value, nil, mode, options) end
 
-    local content, read_error = Fs.read(value, true)
-    if content ~= nil then
-        local image_format = value ~= "-" and ImageInput.detect(content)
-        if image_format then
-            return {
-                input_kind = "image",
-                image_format = image_format,
-                image_reference = ImageInput.reference(value),
-                path = value,
-                profile_path = options.profile_path or Defaults.profile_path(),
-            }
+    local filesystem = options.fs or Fs
+    local content, read_error
+    if value ~= "-" then
+        local prefix
+        prefix, read_error = filesystem.read_prefix(value, IMAGE_PREFIX_BYTES)
+        if prefix ~= nil then
+            local image_format = ImageInput.detect(prefix)
+            if image_format then return resolved_image(value, image_format, options) end
+            content, read_error = filesystem.read(value, true)
+            if content == nil then return nil, unreadable_path(value, read_error) end
         end
+    else
+        content, read_error = filesystem.read(value, true)
+    end
+    if content ~= nil then
         return resolve_content(content, value, mode, options)
     end
     if looks_like_path(value) then
-        local code = looks_like_job_path(value)
-            and "INPUT_JOB_READ_FAILED" or "INPUT_FILE_READ_FAILED"
-        return nil, failure(code,
-            "cannot use input file " .. value .. ": " .. tostring(read_error))
+        return nil, unreadable_path(value, read_error)
     end
     return resolve_content(value, nil, mode, options)
 end

@@ -2,6 +2,7 @@
 local check = require("unit.support")
 local compiler = require("tm_u220.app.job_service")
 local defaults = require("tm_u220.app.local_defaults")
+local fs = require("tm_u220.core.fs")
 local resolver = require("tm_u220.app.input_resolver")
 
 local tests = {}
@@ -170,6 +171,44 @@ test("a readable ordinary document is interpreted without losing headings", func
     end)
 end)
 
+test("a readable JPEG is classified before binary bytes reach text validation", function()
+    with_file(".jpg", "\255\216\255\224\0binary", function(path)
+        local resolved, failure = resolver.resolve(path)
+        check.falsy(failure)
+        check.equal(resolved.input_kind, "image")
+        check.equal(resolved.image_format, "jpeg")
+        check.equal(resolved.path, path)
+    end)
+end)
+
+test("an oversized sparse image is classified without a complete file read", function()
+    local path = temporary_path(".jpg")
+    local handle
+    local ok, failure = xpcall(function()
+        handle = assert(io.open(path, "wb"))
+        assert(handle:write("\255\216\255\224signature"))
+        assert(handle:seek("set", 16 * 1024 * 1024))
+        assert(handle:write("\0"))
+        assert(handle:close())
+        handle = nil
+
+        local resolved = assert(resolver.resolve(path, { fs = {
+            read_prefix = fs.read_prefix,
+            read = function()
+                error("recognized direct images must not be read completely", 0)
+            end,
+        } }))
+        check.equal(resolved.input_kind, "image")
+        check.equal(resolved.image_format, "jpeg")
+        local measured = assert(io.open(path, "rb"))
+        check.truthy(assert(measured:seek("end")) > 1024 * 1024)
+        assert(measured:close())
+    end, debug.traceback)
+    if handle then pcall(handle.close, handle) end
+    os.remove(path)
+    if not ok then error(failure, 0) end
+end)
+
 test("a missing u220-looking path fails instead of becoming text", function()
     local path = temporary_path(".u220")
     local resolved, failure = resolver.resolve(path)
@@ -184,6 +223,16 @@ test("a missing ordinary-document path fails instead of becoming literal text", 
     check.falsy(resolved)
     check.equal(failure.code, "INPUT_FILE_READ_FAILED")
     check.contains(failure.message, path)
+end)
+
+test("a literal home-relative path explains standard shell expansion", function()
+    local token = assert(temporary_path(".jpg"):match("([^/]+)$"))
+    local path = "~/" .. token
+    local resolved, failure = resolver.resolve(path)
+    check.falsy(resolved)
+    check.equal(failure.code, "INPUT_FILE_READ_FAILED")
+    check.contains(failure.message,
+        'use an unquoted ~ or "$HOME/..." for your home directory')
 end)
 
 test("missing whitespace-containing filenames fail instead of becoming text", function()

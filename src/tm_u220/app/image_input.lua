@@ -1,11 +1,13 @@
--- Recognizes supported image bytes and normalizes direct files into one image-only document.
+-- Recognizes known image bytes and normalizes direct files into one image-only document.
 -- It contains no decoding or filesystem policy; those remain in the image asset pipeline.
 local M = {}
+local JPEG_SIGNATURE = "\255\216\255"
 local PNG_SIGNATURE = "\137PNG\r\n\26\n"
 
 function M.detect(value)
     if type(value) ~= "string" then return nil end
     if value:sub(1, #PNG_SIGNATURE) == PNG_SIGNATURE then return "png" end
+    if value:sub(1, #JPEG_SIGNATURE) == JPEG_SIGNATURE then return "jpeg" end
     local third = value:byte(3)
     if value:sub(1, 2) == "P4"
         and (third == 35 or third == 32 or (third and third >= 9 and third <= 13)) then

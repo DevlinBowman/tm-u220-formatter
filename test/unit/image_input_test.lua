@@ -5,10 +5,12 @@ local ImageInput = require("tm_u220.app.image_input")
 
 local tests = {}
 
-tests[#tests + 1] = { "supported image signatures are detected without extensions", function()
+tests[#tests + 1] = { "known image signatures are detected without extensions", function()
     check.equal(ImageInput.detect("\137PNG\r\n\26\nrest"), "png")
+    check.equal(ImageInput.detect("\255\216\255\224rest"), "jpeg")
     check.equal(ImageInput.detect("P4\n1 1\n\0"), "pbm")
     check.equal(ImageInput.detect("!tm-u220 job 1\n"), nil)
+    check.equal(ImageInput.detect("\255\216not-jpeg"), nil)
 end }
 
 tests[#tests + 1] = { "direct image paths reduce to one relative filename", function()

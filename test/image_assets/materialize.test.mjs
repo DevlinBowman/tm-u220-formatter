@@ -1,4 +1,4 @@
-// Exercises the fixed safe-image orchestration helper with real PNG and raw PBM inputs.
+// Exercises the fixed safe-image helper with real PNG/JPEG and raw PBM inputs.
 // Exact protocols keep decoder output deterministic without exposing filesystem paths.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const helper = fileURLToPath(new URL("../../libexec/image_assets/materialize.mjs", import.meta.url));
 const chicken = fileURLToPath(new URL("../assets/Chicken.png", import.meta.url));
+const jpeg = fileURLToPath(new URL("../assets/jpeg/color-grid-7x5.jpg", import.meta.url));
 
 function materialize(base, reference, maximum = 1024 * 1024, kind) {
   const args = [helper, base, reference, String(maximum)];
@@ -21,12 +22,23 @@ function materialize(base, reference, maximum = 1024 * 1024, kind) {
 test("emits deterministic grayscale for Chicken.png", () => {
   const result = materialize(chicken, "Chicken.png");
   assert.equal(result.status, 0);
-  const marker = Buffer.from(`U220GRAY1\n160 112 ${fs.statSync(chicken).size}\n`);
+  const marker = Buffer.from(`U220GRAY2\npng 160 112 ${fs.statSync(chicken).size}\n`);
   assert.deepEqual(result.stdout.subarray(0, marker.length), marker);
   const data = result.stdout.subarray(marker.length);
   assert.equal(data.length, 17920);
   assert.equal(crypto.createHash("sha256").update(data).digest("hex"),
     "8e35d4cb7501a259fd34d525aa95f529339233b51b147f79703e15fcbeec78a7");
+});
+
+test("emits deterministic grayscale for a baseline JPEG", () => {
+  const result = materialize(jpeg, "color-grid-7x5.jpg");
+  assert.equal(result.status, 0);
+  const marker = Buffer.from(`U220GRAY2\njpeg 7 5 ${fs.statSync(jpeg).size}\n`);
+  assert.deepEqual(result.stdout.subarray(0, marker.length), marker);
+  const data = result.stdout.subarray(marker.length);
+  assert.equal(data.length, 35);
+  assert.equal(crypto.createHash("sha256").update(data).digest("hex"),
+    "090b9ee5e7a56ff54965a72b0d66157630d1fd30db41e5199b3f81d65fac2ad5");
 });
 
 test("preserves non-PNG bytes for the strict PBM decoder", () => {
@@ -52,6 +64,20 @@ test("collapses malformed PNG details without leaking its path", () => {
       Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.from("bad")]));
     const result = materialize(document, "bad.png");
     assert.equal(result.stdout.toString(), "U220ERROR1\nPNG_INVALID\n");
+    assert.equal(result.stdout.includes(Buffer.from(root)), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("collapses malformed JPEG details without leaking its path", () => {
+  const root = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), "u220-jpeg-"));
+  const document = path.join(root, "receipt.u220");
+  try {
+    fs.writeFileSync(document, "!tm-u220 job 1\n");
+    fs.writeFileSync(path.join(root, "bad.jpg"), Buffer.from([0xff, 0xd8, 0xff, 0xd9]));
+    const result = materialize(document, "bad.jpg");
+    assert.equal(result.stdout.toString(), "U220ERROR1\nJPEG_INVALID\n");
     assert.equal(result.stdout.includes(Buffer.from(root)), false);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

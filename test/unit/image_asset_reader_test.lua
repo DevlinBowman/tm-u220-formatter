@@ -1,5 +1,5 @@
 -- Verifies Lua accepts only exact raw-image and decoded-grayscale helper protocols.
--- Filesystem security and PNG syntax are exercised independently at the Node boundary.
+-- Filesystem security and image syntax are exercised independently at the Node boundary.
 local check = require("unit.support")
 local Reader = require("tm_u220.app.image_asset_reader")
 
@@ -52,14 +52,20 @@ tests[#tests + 1] = { "image materializer accepts exact raw and grayscale payloa
     check.equal(raw.source_bytes, 8)
     check.equal(raw.data, "P4\n1 1\n\128")
 
-    local gray = assert(Reader.read_image("receipt.u220", "art/photo.png", 1024, {
-        capture = function() return "U220GRAY1\n2 2 99\n\0\64\128\255" end,
+    local gray = assert(Reader.read_image("receipt.u220", "art/photo.jpg", 1024, {
+        capture = function() return "U220GRAY2\njpeg 2 2 99\n\0\64\128\255" end,
     }))
     check.equal(gray.kind, "grayscale")
+    check.equal(gray.image_format, "jpeg")
     check.equal(gray.width, 2)
     check.equal(gray.height, 2)
     check.equal(gray.source_bytes, 99)
     check.equal(gray.data, "\0\64\128\255")
+
+    local legacy = assert(Reader.read_image("receipt.u220", "art/photo.png", 1024, {
+        capture = function() return "U220GRAY1\n1 1 9\n\128" end,
+    }))
+    check.equal(legacy.image_format, "png")
 
     local rooted = assert(Reader.read_root_image(".", "art/pixel.pbm", 1024, {
         capture = function(spec)
@@ -73,6 +79,9 @@ end }
 
 tests[#tests + 1] = { "image materializer rejects malformed grayscale envelopes", function()
     for _, output in ipairs({
+        "U220GRAY2\ngif 2 2 9\n\0\0\0\0",
+        "U220GRAY2\npng 2 2 9\n\0\0\0",
+        "U220GRAY2\njpeg 2 2 2048\n\0\0\0\0",
         "U220GRAY1\n02 2 9\n\0\0\0\0",
         "U220GRAY1\n2 2 9\n\0\0\0",
         "U220GRAY1\n2 2 2048\n\0\0\0\0",
@@ -90,6 +99,12 @@ tests[#tests + 1] = { "image materializer rejects malformed grayscale envelopes"
     })
     check.equal(value, nil)
     check.equal(failure, "PNG_INVALID")
+
+    value, failure = Reader.read_image("receipt.u220", "bad.jpg", 1024, {
+        capture = function() return "U220ERROR1\nJPEG_INVALID\n" end,
+    })
+    check.equal(value, nil)
+    check.equal(failure, "JPEG_INVALID")
 
     for _, output in ipairs({ "U220ASSET1\n", "U220ASSET1\n12345678901" }) do
         value, failure = Reader.read_image("receipt.u220", "bad.pbm", 10, {

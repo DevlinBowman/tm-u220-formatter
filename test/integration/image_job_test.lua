@@ -1,4 +1,4 @@
--- Exercises PBM and PNG jobs through safe materialization, preview, ESC/POS, and live checkpoints.
+-- Exercises PBM, PNG, and JPEG through safe materialization, preview, ESC/POS, and checkpoints.
 -- Tiny fixtures prove exact bytes while Chicken.png is the real direct-image acceptance case.
 local check = require("unit.support")
 local Jobs = require("tm_u220.app.job_service")
@@ -102,6 +102,30 @@ tests[#tests + 1] = { "invalid assets and table placement fail before printer ou
     check.equal(invalid.bytes, nil)
     check.truthy(has_code(invalid, "IMAGE_ASSET_INVALID"))
 
+    local invalid_jpeg = Jobs.compile_content("@image art/bad.jpg", {
+        profile = PROFILE,
+        image_profile = {},
+        document_path = "/jobs/receipt.u220",
+        image_asset_reader_runtime = {
+            capture = function() return "U220ERROR1\nJPEG_INVALID\n" end,
+        },
+    })
+    check.equal(invalid_jpeg.bytes, nil)
+    check.contains(has_code(invalid_jpeg, "IMAGE_ASSET_INVALID").message,
+        "cannot decode @image JPEG art/bad.jpg")
+
+    local oversized = Jobs.compile_content("@image art/huge.jpg", {
+        profile = PROFILE,
+        image_profile = {},
+        document_path = "/jobs/receipt.u220",
+        image_asset_reader_runtime = {
+            capture = function() return "U220ERROR1\nSIZE_INVALID\n" end,
+        },
+    })
+    check.equal(oversized.bytes, nil)
+    check.contains(has_code(oversized, "IMAGE_ASSET_SIZE_INVALID").message,
+        "between 1 byte and 1 MiB")
+
     local inside = compile(table.concat({
         "@table 5", "@image art/pixel.pbm 1 1", "@end-table",
     }, "\n"))
@@ -170,6 +194,37 @@ tests[#tests + 1] = { "Chicken.png compiles directly through the default image p
     check.equal(#result.bytes, 3339)
     check.equal(Sha256.hex(result.bytes),
         "ad6cdea5a225629386a2a2ab0e7c5c81392493578669ad9120e9fa3b487f4e4d")
+end }
+
+tests[#tests + 1] = { "JPEG compiles directly and as a companion image", function()
+    local result = Jobs.compile_input("test/assets/jpeg/color-grid-7x5.jpg", {
+        profile = PROFILE,
+        image_profile = {},
+    })
+    check.equal(#result.diagnostics, 0)
+    check.equal(result.input_kind, "image")
+    check.equal(result.document.ops[1].image_format, "jpeg")
+
+    local segment = result.preview_lines[1].segments[1]
+    check.equal(segment.mask_width_dots, 200)
+    check.equal(segment.mask_height_dots, 129)
+    check.equal(#segment.mask_data, 6450)
+    check.equal(Sha256.hex(bytes_from_hex(segment.mask_data)),
+        "137e6175ceec51227b193db50c5b7f259899b2d15ae9686844e444a90b8fe045")
+    check.equal(result.paper_preview.max_y_vertical_units, 276)
+    check.equal(#result.bytes, 3547)
+    check.equal(Sha256.hex(result.bytes),
+        "43ec7cbe59622caabef3927fc89fcb25639a755d970653043ebfc806e7a723e5")
+
+    local companion = Jobs.compile_content(
+        '@image "test/assets/jpeg/color-grid-7x5.jpg" 20 10', {
+            profile = PROFILE,
+            image_profile = {},
+            asset_root = ".",
+        })
+    check.equal(#companion.diagnostics, 0)
+    check.equal(companion.preview_lines[1].segments[1].mask_width_dots, 100)
+    check.equal(companion.preview_lines[1].segments[1].mask_height_dots, 90)
 end }
 
 return tests

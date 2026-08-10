@@ -1,4 +1,4 @@
--- Materializes data-only @image operations from safely read PBM or decoded PNG companions.
+-- Materializes data-only @image operations from safely read PBM, PNG, or JPEG companions.
 -- Path security stays in the fixed reader while canonical rasters stay in printhead modules.
 local AssetReader = require("tm_u220.app.image_asset_reader")
 local Diagnostics = require("tm_u220.core.diagnostics")
@@ -24,6 +24,7 @@ local FAILURE_CODES = {
     SIZE_INVALID = "IMAGE_ASSET_SIZE_INVALID",
     FILE_CHANGED = "IMAGE_ASSET_CHANGED",
     PNG_INVALID = "IMAGE_ASSET_INVALID",
+    JPEG_INVALID = "IMAGE_ASSET_INVALID",
 }
 
 local function copy(values)
@@ -34,6 +35,16 @@ end
 
 local function diagnostic(code, message, span)
     return Diagnostics.new(code, message, span)
+end
+
+local function read_failure_message(failure, path)
+    if failure == "PNG_INVALID" then return "cannot decode @image PNG " .. path end
+    if failure == "JPEG_INVALID" then return "cannot decode @image JPEG " .. path end
+    if failure == "SIZE_INVALID" then
+        return string.format("@image asset %s must be between 1 byte and %d MiB",
+            path, MAXIMUM_ASSET_BYTES // (1024 * 1024))
+    end
+    return "cannot safely read @image asset " .. path
 end
 
 function M.materialize(document, options)
@@ -77,9 +88,7 @@ function M.materialize(document, options)
                 if not asset then
                     result.diagnostics[#result.diagnostics + 1] = diagnostic(
                         FAILURE_CODES[failure] or "IMAGE_ASSET_READ_FAILED",
-                        failure == "PNG_INVALID"
-                            and "cannot decode @image PNG " .. operation.path
-                            or "cannot safely read @image asset " .. operation.path,
+                        read_failure_message(failure, operation.path),
                         operation.span)
                 elseif total_bytes + asset.source_bytes > MAXIMUM_TOTAL_BYTES then
                     result.diagnostics[#result.diagnostics + 1] = diagnostic(
@@ -93,7 +102,7 @@ function M.materialize(document, options)
                         raster, decode_failure = Grayscale.new({
                             width = asset.width, height = asset.height, data = asset.data,
                         })
-                        image_format = "png"
+                        image_format = asset.image_format
                     elseif asset.kind == "bytes" then
                         raster, decode_failure = Pbm.decode(asset.data, PBM_LIMITS)
                         image_format = "pbm"

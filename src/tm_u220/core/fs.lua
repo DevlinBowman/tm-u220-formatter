@@ -1,4 +1,26 @@
+-- Provides the formatter's small synchronous file boundary for complete text/binary reads, bounded prefixes, and writes.
 local M = {}
+
+function M.read_prefix(path, maximum_bytes)
+    if type(maximum_bytes) ~= "number" or maximum_bytes % 1 ~= 0
+        or maximum_bytes < 1 then
+        return nil, "read prefix size must be a positive integer"
+    end
+    if path == "-" then
+        return nil, "cannot read a bounded prefix from standard input"
+    end
+
+    local handle, err = io.open(path, "rb")
+    if not handle then
+        return nil, string.format("cannot read %s: %s", tostring(path), tostring(err))
+    end
+    local value, read_error = handle:read(maximum_bytes)
+    handle:close()
+    if not value and read_error then
+        return nil, string.format("cannot read %s: %s", tostring(path), tostring(read_error))
+    end
+    return value or ""
+end
 
 function M.read(path, binary)
     if path == "-" then
