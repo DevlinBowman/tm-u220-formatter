@@ -14,7 +14,7 @@ end
 
 local function decision(value, x, y, method, threshold)
     if method == "ordered" then
-        local offset = (BAYER[(y - 1) % 4 + 1][(x - 1) % 4 + 1] - 7.5) * 8
+        local offset = (BAYER[(y - 1) % 4 + 1][(x - 1) % 4 + 1] - 7.5) * 16
         return value + offset < threshold
     end
     return value < threshold

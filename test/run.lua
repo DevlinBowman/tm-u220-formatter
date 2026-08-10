@@ -15,6 +15,7 @@ local suites = {
     "unit.printhead_image_profile_test",
     "unit.printhead_image_profile_file_test",
     "unit.printhead_image_prepare_test",
+    "unit.printhead_image_dither_test",
     "unit.printhead_dot_mask_test",
     "unit.printhead_grayscale_test",
     "unit.printhead_pbm_test",
