@@ -1,8 +1,8 @@
 !tm-u220 image-profile 1
 density=solid
 fit=contain
-resample=nearest
-dither=threshold
+resample=bilinear
+dither=floyd
 threshold=128
 invert=off
 unidirectional=on

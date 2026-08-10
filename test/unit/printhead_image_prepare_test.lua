@@ -48,8 +48,12 @@ end }
 
 tests[#tests + 1] = { "inversion and threshold choices affect target dots", function()
     local source = mask({ { true, false } })
-    local normal = prepare(source, { fit = "stretch" }, 2, 1)
-    local inverted = prepare(source, { fit = "stretch", invert = true }, 2, 1)
+    local normal = prepare(source, {
+        fit = "stretch", resample = "nearest", dither = "threshold",
+    }, 2, 1)
+    local inverted = prepare(source, {
+        fit = "stretch", resample = "nearest", dither = "threshold", invert = true,
+    }, 2, 1)
     check.equal(normal.mask.data, check.bytes("80"))
     check.equal(inverted.mask.data, check.bytes("40"))
 end }

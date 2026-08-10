@@ -1,7 +1,8 @@
 -- Presents the complete, path-free API for versioned image-interpretation profiles.
--- Callers can validate effective values or parse and serialize profile text without importing internals.
+-- Safe copies expose effective options and editor schema without leaking internal model state.
 local File = require("tm_u220.printhead.image_profile.file")
 local Model = require("tm_u220.printhead.image_profile.model")
+local Schema = require("tm_u220.printhead.image_profile.schema")
 
 return {
     VERSION = Model.VERSION,
@@ -9,6 +10,8 @@ return {
     is = Model.is,
     new = Model.new,
     defaults = Model.defaults,
+    options = Model.options,
+    schema = Schema.describe,
     parse = File.parse,
     serialize = File.serialize,
 }

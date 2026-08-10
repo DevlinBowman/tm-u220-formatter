@@ -8,8 +8,8 @@ local CANONICAL = table.concat({
     "!tm-u220 image-profile 1",
     "density=solid",
     "fit=contain",
-    "resample=nearest",
-    "dither=threshold",
+    "resample=bilinear",
+    "dither=floyd",
     "threshold=128",
     "invert=off",
     "unidirectional=on",
@@ -62,6 +62,27 @@ tests[#tests + 1] = { "serialization is canonical and round trips", function()
     check.contains(source, "default_width_cells=18\n")
 end }
 
+tests[#tests + 1] = { "serialization preserves effective non-default model values", function()
+    local profile = assert(ImageProfile.new {
+        density = "detail", fit = "cover", resample = "nearest",
+        dither = "threshold", threshold = 203, invert = true,
+        unidirectional = false, trailing_gap_vertical_units = 9,
+        default_width_cells = 22, default_height_cells = 11,
+    })
+    local source = assert(ImageProfile.serialize(profile))
+    check.contains(source, "density=detail\n")
+    check.contains(source, "fit=cover\n")
+    check.contains(source, "resample=nearest\n")
+    check.contains(source, "dither=threshold\n")
+    check.contains(source, "threshold=203\n")
+    check.contains(source, "invert=on\n")
+    check.contains(source, "default_height_cells=11\n")
+    local parsed = ImageProfile.parse(source)
+    check.equal(#parsed.diagnostics, 0)
+    check.equal(parsed.profile.dither, "threshold")
+    check.equal(parsed.profile.default_width_cells, 22)
+end }
+
 tests[#tests + 1] = { "profile header is exact unique and versioned", function()
     check.equal(ImageProfile.HEADER, "!tm-u220 image-profile 1")
     check.equal(ImageProfile.VERSION, 1)
@@ -98,8 +119,8 @@ tests[#tests + 1] = { "profile file rejects invalid and noncanonical values", fu
     local replacements = {
         { "density=solid", "density=photo" },
         { "fit=contain", "fit=auto" },
-        { "resample=nearest", "resample=bicubic" },
-        { "dither=threshold", "dither=random" },
+        { "resample=bilinear", "resample=bicubic" },
+        { "dither=floyd", "dither=random" },
         { "threshold=128", "threshold=0128" },
         { "invert=off", "invert=false" },
         { "unidirectional=on", "unidirectional=yes" },

@@ -118,5 +118,5 @@ test("valid JPEG preview routes compile the fixed canonical printer mask", async
   assert.deepEqual([segment.mask_width_dots, segment.mask_height_dots], [200, 129]);
   assert.equal(createHash("sha256")
     .update(Buffer.from(segment.mask_data, "hex")).digest("hex"),
-    "137e6175ceec51227b193db50c5b7f259899b2d15ae9686844e444a90b8fe045");
+    "c6799b7b6757592e5b6f9b88fe95f6ca284b1a3cb549ab787d7a6551cc642b54");
 });

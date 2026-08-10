@@ -110,6 +110,7 @@ export const LUA_PAYLOAD = Object.freeze([
   { path: "src/tm_u220/printhead/image_profile.lua", mode: 0o644 },
   { path: "src/tm_u220/printhead/image_profile/file.lua", mode: 0o644 },
   { path: "src/tm_u220/printhead/image_profile/model.lua", mode: 0o644 },
+  { path: "src/tm_u220/printhead/image_profile/schema.lua", mode: 0o644 },
   { path: "src/tm_u220/printhead/pbm.lua", mode: 0o644 },
   { path: "src/tm_u220/printing/installed.lua", mode: 0o644 },
   { path: "src/tm_u220/printing/manifest.lua", mode: 0o644 },

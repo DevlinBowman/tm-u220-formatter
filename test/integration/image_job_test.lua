@@ -189,11 +189,11 @@ tests[#tests + 1] = { "Chicken.png compiles directly through the default image p
     check.equal(segment.column_step_half_dots, 2)
     check.equal(#segment.mask_data, 6300)
     check.equal(Sha256.hex(bytes_from_hex(segment.mask_data)),
-        "57e7f56d8ef5b7aa044976e74f4947c2db59863d6ffab6ce691bca417f50dcf5")
+        "cd8fd464a92643ab7772263f5123a1a9fb7699bb9d4cd0b38b16ffe840bf48f8")
     check.equal(result.paper_preview.max_y_vertical_units, 260)
     check.equal(#result.bytes, 3339)
     check.equal(Sha256.hex(result.bytes),
-        "ad6cdea5a225629386a2a2ab0e7c5c81392493578669ad9120e9fa3b487f4e4d")
+        "ea73967dc7d4a89a8f0f12cb5416aacdb8ee588acaef97ed742c72dfea06cb96")
 end }
 
 tests[#tests + 1] = { "JPEG compiles directly and as a companion image", function()
@@ -210,11 +210,11 @@ tests[#tests + 1] = { "JPEG compiles directly and as a companion image", functio
     check.equal(segment.mask_height_dots, 129)
     check.equal(#segment.mask_data, 6450)
     check.equal(Sha256.hex(bytes_from_hex(segment.mask_data)),
-        "137e6175ceec51227b193db50c5b7f259899b2d15ae9686844e444a90b8fe045")
+        "c6799b7b6757592e5b6f9b88fe95f6ca284b1a3cb549ab787d7a6551cc642b54")
     check.equal(result.paper_preview.max_y_vertical_units, 276)
     check.equal(#result.bytes, 3547)
     check.equal(Sha256.hex(result.bytes),
-        "43ec7cbe59622caabef3927fc89fcb25639a755d970653043ebfc806e7a723e5")
+        "7efec6eb13019732bfdc59a88b70ab85c8845b80250b4773ecb4d795f43f0d79")
 
     local companion = Jobs.compile_content(
         '@image "test/assets/jpeg/color-grid-7x5.jpg" 20 10', {

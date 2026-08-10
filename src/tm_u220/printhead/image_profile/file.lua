@@ -1,27 +1,21 @@
--- Parses and serializes the exact versioned file format for image-interpretation profiles.
+-- Parses and serializes the exact schema-owned image-profile file format.
 -- It performs no path lookup or I/O, leaving configuration ownership outside the printhead domain.
 local Diagnostics = require("tm_u220.core.diagnostics")
 local Model = require("tm_u220.printhead.image_profile.model")
+local Schema = require("tm_u220.printhead.image_profile.schema")
 
 local M = {}
 
-local HEADER = "!tm-u220 image-profile " .. Model.VERSION
-local FIELD_ORDER = Model.fields()
-local KNOWN_FIELDS = {}
-for _, field in ipairs(FIELD_ORDER) do KNOWN_FIELDS[field] = true end
-
-local VALUES = {
-    density = { solid = true, detail = true },
-    fit = { contain = true, cover = true, stretch = true },
-    resample = { nearest = true, area = true, bilinear = true },
-    dither = { threshold = true, ordered = true, floyd = true },
-}
-local VALUE_TEXT = {
-    density = "solid or detail",
-    fit = "contain, cover, or stretch",
-    resample = "nearest, area, or bilinear",
-    dither = "threshold, ordered, or floyd",
-}
+local HEADER = Schema.HEADER
+local FIELDS = Schema.fields()
+local BY_NAME = {}
+for _, field in ipairs(FIELDS) do
+    BY_NAME[field.name] = field
+    if field.choices then
+        field.accepted = {}
+        for _, choice in ipairs(field.choices) do field.accepted[choice] = true end
+    end
+end
 
 local function line_span(line)
     return { start_line = line, end_line = line }
@@ -58,34 +52,36 @@ local function integer(raw, minimum, maximum)
     return value
 end
 
+local function choice_text(choices)
+    if #choices == 2 then return choices[1] .. " or " .. choices[2] end
+    return table.concat(choices, ", ", 1, #choices - 1)
+        .. ", or " .. choices[#choices]
+end
+
 local function decode_value(field, raw)
-    if VALUES[field] then
-        if VALUES[field][raw] then return raw end
-        return nil, field .. " must be " .. VALUE_TEXT[field]
+    if field.kind == "enum" then
+        if field.accepted[raw] then return raw end
+        return nil, field.name .. " must be " .. choice_text(field.choices)
     end
-    if field == "invert" or field == "unidirectional" then
+    if field.kind == "boolean" then
         if raw == "on" then return true end
         if raw == "off" then return false end
-        return nil, field .. " must be on or off"
+        return nil, field.name .. " must be on or off"
     end
-    if field == "threshold" then
-        local value = integer(raw, 0, 255)
-        return value, value == nil and "threshold must be an integer from 0 through 255" or nil
+    if field.kind == "integer" then
+        local value = integer(raw, field.minimum, field.maximum)
+        return value, value == nil and string.format(
+            "%s must be an integer from %d through %d",
+            field.name, field.minimum, field.maximum) or nil
     end
-    if field == "trailing_gap_vertical_units" then
-        local value = integer(raw, 0, 255)
-        return value, value == nil
-            and "trailing_gap_vertical_units must be an integer from 0 through 255" or nil
-    end
-    if field == "default_width_cells" then
-        if raw == "page" then return raw end
-        local value = integer(raw, 1, math.maxinteger)
-        return value, value == nil and "default_width_cells must be a positive integer or page" or nil
-    end
-    if field == "default_height_cells" then
-        if raw == "auto" then return raw end
-        local value = integer(raw, 1, math.maxinteger)
-        return value, value == nil and "default_height_cells must be a positive integer or auto" or nil
+    if field.kind == "integer_or_keyword" then
+        if raw == field.keyword then return raw end
+        local value = integer(raw, field.minimum, field.maximum or math.maxinteger)
+        local range = field.maximum and string.format(
+            "an integer from %d through %d", field.minimum, field.maximum)
+            or "a positive integer"
+        return value, value == nil and field.name
+            .. " must be " .. range .. " or " .. field.keyword or nil
     end
 end
 
@@ -118,7 +114,7 @@ local function parse_fields(result, lines, first)
             elseif not field then
                 result.diagnostics[#result.diagnostics + 1] = diagnostic(
                     "IMAGE_PROFILE_FILE_INVALID_SYNTAX", "expected a key=value field", number)
-            elseif not KNOWN_FIELDS[field] then
+            elseif not BY_NAME[field] then
                 result.diagnostics[#result.diagnostics + 1] = diagnostic(
                     "IMAGE_PROFILE_FILE_UNKNOWN_FIELD", "unknown image profile field " .. field, number)
             elseif seen[field] then
@@ -126,7 +122,7 @@ local function parse_fields(result, lines, first)
                     "IMAGE_PROFILE_FILE_DUPLICATE_FIELD", "duplicate image profile field " .. field, number)
             else
                 seen[field] = true
-                local value, err = decode_value(field, raw)
+                local value, err = decode_value(BY_NAME[field], raw)
                 if err then
                     result.diagnostics[#result.diagnostics + 1] = diagnostic(
                         "IMAGE_PROFILE_FILE_INVALID_FIELD", err, number)
@@ -136,10 +132,11 @@ local function parse_fields(result, lines, first)
             end
         end
     end
-    for _, field in ipairs(FIELD_ORDER) do
-        if not seen[field] then
+    for _, field in ipairs(FIELDS) do
+        if not seen[field.name] then
             result.diagnostics[#result.diagnostics + 1] = diagnostic(
-                "IMAGE_PROFILE_FILE_MISSING_FIELD", "missing required image profile field " .. field,
+                "IMAGE_PROFILE_FILE_MISSING_FIELD",
+                "missing required image profile field " .. field.name,
                 #lines + 1)
         end
     end
@@ -169,7 +166,7 @@ function M.parse(source)
 end
 
 local function encode_value(field, value)
-    if field == "invert" or field == "unidirectional" then
+    if field.kind == "boolean" then
         return value and "on" or "off"
     end
     return tostring(value)
@@ -179,13 +176,16 @@ function M.serialize(value)
     if type(value) ~= "table" then
         return nil, diagnostic("IMAGE_PROFILE_FILE_INVALID_INPUT", "image profile must be a table")
     end
-    local profile, err = Model.new(value)
+    local options = value
+    if Model.is(value) then options = assert(Model.options(value)) end
+    local profile, err = Model.new(options)
     if not profile then
         return nil, diagnostic("IMAGE_PROFILE_FILE_INVALID_PROFILE", err)
     end
     local lines = { HEADER }
-    for _, field in ipairs(FIELD_ORDER) do
-        lines[#lines + 1] = field .. "=" .. encode_value(field, profile[field])
+    for _, field in ipairs(FIELDS) do
+        lines[#lines + 1] = field.name .. "="
+            .. encode_value(field, profile[field.name])
     end
     lines[#lines + 1] = ""
     return table.concat(lines, "\n")

@@ -1,47 +1,18 @@
--- Validates image-interpretation choices into an immutable, path-free printhead profile.
--- This model owns artistic and image-layout defaults without importing receipt or printer configuration.
+-- Validates canonical schema values into an immutable, path-free printhead profile.
+-- The schema owns field policy while this model owns effective profile identity and state.
+local Schema = require("tm_u220.printhead.image_profile.schema")
+
 local M = {}
 
-local VERSION = 1
-local FIELD_ORDER = {
-    "density",
-    "fit",
-    "resample",
-    "dither",
-    "threshold",
-    "invert",
-    "unidirectional",
-    "trailing_gap_vertical_units",
-    "default_width_cells",
-    "default_height_cells",
-}
-local KNOWN_FIELDS = {}
-for _, field in ipairs(FIELD_ORDER) do KNOWN_FIELDS[field] = true end
-
-local DEFAULTS = {
-    density = "solid",
-    fit = "contain",
-    resample = "nearest",
-    dither = "threshold",
-    threshold = 128,
-    invert = false,
-    unidirectional = true,
-    trailing_gap_vertical_units = 4,
-    default_width_cells = "page",
-    default_height_cells = "auto",
-}
-local ENUMS = {
-    density = { solid = true, detail = true },
-    fit = { contain = true, cover = true, stretch = true },
-    resample = { nearest = true, area = true, bilinear = true },
-    dither = { threshold = true, ordered = true, floyd = true },
-}
-local ENUM_TEXT = {
-    density = "solid or detail",
-    fit = "contain, cover, or stretch",
-    resample = "nearest, area, or bilinear",
-    dither = "threshold, ordered, or floyd",
-}
+local FIELDS = Schema.fields()
+local BY_NAME = {}
+for _, field in ipairs(FIELDS) do
+    BY_NAME[field.name] = field
+    if field.choices then
+        field.accepted = {}
+        for _, choice in ipairs(field.choices) do field.accepted[choice] = true end
+    end
+end
 
 local STATE = setmetatable({}, { __mode = "k" })
 
@@ -50,28 +21,31 @@ local function integer(value)
         and value <= math.maxinteger and value % 1 == 0
 end
 
+local function choice_text(choices)
+    if #choices == 2 then return choices[1] .. " or " .. choices[2] end
+    return table.concat(choices, ", ", 1, #choices - 1)
+        .. ", or " .. choices[#choices]
+end
+
 local function validate(field, value)
-    local choices = ENUMS[field]
-    if choices and not choices[value] then
-        return nil, field .. " must be " .. ENUM_TEXT[field]
+    if field.kind == "enum" and not field.accepted[value] then
+        return nil, field.name .. " must be " .. choice_text(field.choices)
     end
-    if field == "threshold" and (not integer(value) or value < 0 or value > 255) then
-        return nil, "threshold must be an integer from 0 through 255"
+    if field.kind == "integer" and (not integer(value)
+        or value < field.minimum or value > field.maximum) then
+        return nil, string.format("%s must be an integer from %d through %d",
+            field.name, field.minimum, field.maximum)
     end
-    if (field == "invert" or field == "unidirectional") and type(value) ~= "boolean" then
-        return nil, field .. " must be boolean"
+    if field.kind == "boolean" and type(value) ~= "boolean" then
+        return nil, field.name .. " must be boolean"
     end
-    if field == "trailing_gap_vertical_units"
-        and (not integer(value) or value < 0 or value > 255) then
-        return nil, "trailing_gap_vertical_units must be an integer from 0 through 255"
-    end
-    if field == "default_width_cells"
-        and value ~= "page" and (not integer(value) or value < 1) then
-        return nil, "default_width_cells must be a positive integer or page"
-    end
-    if field == "default_height_cells"
-        and value ~= "auto" and (not integer(value) or value < 1) then
-        return nil, "default_height_cells must be a positive integer or auto"
+    if field.kind == "integer_or_keyword" and value ~= field.keyword
+        and (not integer(value) or value < field.minimum
+            or (field.maximum and value > field.maximum)) then
+        local range = field.maximum and string.format(
+            "an integer from %d through %d", field.minimum, field.maximum)
+            or "a positive integer"
+        return nil, field.name .. " must be " .. range .. " or " .. field.keyword
     end
     return value
 end
@@ -79,7 +53,7 @@ end
 local METATABLE = {
     __index = function(value, key)
         local state = STATE[value]
-        if key == "version" then return VERSION end
+        if key == "version" then return Schema.VERSION end
         if state then return state[key] end
     end,
     __newindex = function()
@@ -96,18 +70,18 @@ function M.new(options)
     if options == nil then options = {} end
     if type(options) ~= "table" then return nil, "image profile must be a table" end
     for field in pairs(options) do
-        if not KNOWN_FIELDS[field] then
+        if not BY_NAME[field] then
             return nil, "image profile has unknown field " .. tostring(field)
         end
     end
 
     local state = {}
-    for _, field in ipairs(FIELD_ORDER) do
-        local value = options[field]
-        if value == nil then value = DEFAULTS[field] end
+    for _, field in ipairs(FIELDS) do
+        local value = options[field.name]
+        if value == nil then value = field.default end
         local validated, err = validate(field, value)
         if err then return nil, err end
-        state[field] = validated
+        state[field.name] = validated
     end
     local profile = setmetatable({}, METATABLE)
     STATE[profile] = state
@@ -121,16 +95,16 @@ end
 function M.options(profile)
     if not M.is(profile) then return nil, "value is not an image profile" end
     local options = {}
-    for _, field in ipairs(FIELD_ORDER) do options[field] = profile[field] end
+    for _, field in ipairs(FIELDS) do options[field.name] = profile[field.name] end
     return options
 end
 
 function M.fields()
     local fields = {}
-    for index, field in ipairs(FIELD_ORDER) do fields[index] = field end
+    for index, field in ipairs(FIELDS) do fields[index] = field.name end
     return fields
 end
 
-M.VERSION = VERSION
+M.VERSION = Schema.VERSION
 
 return M

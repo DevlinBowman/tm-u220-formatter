@@ -30,7 +30,7 @@ test("render and compile accept Chicken.png as a direct image", () => {
   assert.deepEqual(tokens.slice(-6), ["1B", "4A", "04", "1B", "55", "00"]);
   const bytes = Buffer.from(tokens.map((token) => Number.parseInt(token, 16)));
   assert.equal(crypto.createHash("sha256").update(bytes).digest("hex"),
-    "ad6cdea5a225629386a2a2ab0e7c5c81392493578669ad9120e9fa3b487f4e4d");
+    "ea73967dc7d4a89a8f0f12cb5416aacdb8ee588acaef97ed742c72dfea06cb96");
 });
 
 test("render and compile accept JPEG as a direct image", () => {
@@ -41,7 +41,7 @@ test("render and compile accept JPEG as a direct image", () => {
   assert.equal(tokens.length, 3547);
   const bytes = Buffer.from(tokens.map((token) => Number.parseInt(token, 16)));
   assert.equal(crypto.createHash("sha256").update(bytes).digest("hex"),
-    "43ec7cbe59622caabef3927fc89fcb25639a755d970653043ebfc806e7a723e5");
+    "7efec6eb13019732bfdc59a88b70ab85c8845b80250b4773ecb4d795f43f0d79");
 });
 
 test("an inline image directive resolves from the invocation directory", () => {

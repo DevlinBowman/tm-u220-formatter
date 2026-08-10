@@ -149,12 +149,12 @@ test("compiler bridge renders a direct PNG from its canonical printer mask", asy
   for (const byte of mask) {
     for (let bit = 0; bit < 8; bit += 1) strikes += (byte >> bit) & 1;
   }
-  assert.equal(strikes, 8625);
+  assert.equal(strikes, 8498);
   assert.equal(segment.width_half_dots, 400);
   assert.equal(segment.character_cell_height_vertical_units, 252);
   assert.equal(result.paper_preview.max_y_vertical_units, 260);
   assert.equal(createHash("sha256").update(mask).digest("hex"),
-    "57e7f56d8ef5b7aa044976e74f4947c2db59863d6ffab6ce691bca417f50dcf5");
+    "cd8fd464a92643ab7772263f5123a1a9fb7699bb9d4cd0b38b16ffe840bf48f8");
 });
 
 test("compiler bridge renders a direct JPEG from its canonical printer mask", async () => {
@@ -168,7 +168,7 @@ test("compiler bridge renders a direct JPEG from its canonical printer mask", as
   assert.equal(segment.mask_data.length, 6450);
   assert.equal(result.paper_preview.max_y_vertical_units, 276);
   assert.equal(createHash("sha256").update(Buffer.from(segment.mask_data, "hex")).digest("hex"),
-    "137e6175ceec51227b193db50c5b7f259899b2d15ae9686844e444a90b8fe045");
+    "c6799b7b6757592e5b6f9b88fe95f6ca284b1a3cb549ab787d7a6551cc642b54");
 });
 
 test("direct PNG sessions expose description text without making it compiler input", async () => {

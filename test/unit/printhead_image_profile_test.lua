@@ -4,13 +4,13 @@ local ImageProfile = require("tm_u220.printhead.image_profile")
 
 local tests = {}
 
-tests[#tests + 1] = { "image profile exposes conservative MVP defaults", function()
+tests[#tests + 1] = { "image profile exposes photographic defaults", function()
     local profile = ImageProfile.defaults()
     check.equal(profile.version, 1)
     check.equal(profile.density, "solid")
     check.equal(profile.fit, "contain")
-    check.equal(profile.resample, "nearest")
-    check.equal(profile.dither, "threshold")
+    check.equal(profile.resample, "bilinear")
+    check.equal(profile.dither, "floyd")
     check.equal(profile.threshold, 128)
     check.equal(profile.invert, false)
     check.equal(profile.unidirectional, true)
@@ -24,8 +24,8 @@ tests[#tests + 1] = { "every interpretation setting can be overridden", function
     local profile = assert(ImageProfile.new {
         density = "detail",
         fit = "cover",
-        resample = "bilinear",
-        dither = "floyd",
+        resample = "area",
+        dither = "ordered",
         threshold = 200,
         invert = true,
         unidirectional = false,
@@ -35,8 +35,8 @@ tests[#tests + 1] = { "every interpretation setting can be overridden", function
     })
     check.equal(profile.density, "detail")
     check.equal(profile.fit, "cover")
-    check.equal(profile.resample, "bilinear")
-    check.equal(profile.dither, "floyd")
+    check.equal(profile.resample, "area")
+    check.equal(profile.dither, "ordered")
     check.equal(profile.threshold, 200)
     check.equal(profile.invert, true)
     check.equal(profile.unidirectional, false)
@@ -52,6 +52,43 @@ tests[#tests + 1] = { "profiles are read-only and defaults are independent", fun
     check.falsy(ok)
     check.contains(err, "read-only")
     check.equal(second.threshold, 128)
+end }
+
+tests[#tests + 1] = { "public options and schema are safe independent copies", function()
+    local profile = assert(ImageProfile.new {
+        dither = "floyd", threshold = 91, default_width_cells = 18,
+    })
+    local options = assert(ImageProfile.options(profile))
+    check.equal(options.dither, "floyd")
+    check.equal(options.threshold, 91)
+    options.dither = "threshold"
+    check.equal(profile.dither, "floyd")
+
+    local schema = ImageProfile.schema()
+    check.equal(schema.version, 1)
+    check.equal(schema.header, "!tm-u220 image-profile 1")
+    check.equal(#schema.fields, 10)
+    check.equal(schema.fields[1].name, "density")
+    check.equal(schema.fields[1].kind, "enum")
+    check.equal(schema.fields[1].default, "solid")
+    check.equal(schema.fields[1].choices[2], "detail")
+    check.equal(schema.fields[3].default, "bilinear")
+    check.equal(schema.fields[4].default, "floyd")
+    check.equal(schema.fields[5].minimum, 0)
+    check.equal(schema.fields[5].maximum, 255)
+    check.equal(schema.fields[9].kind, "integer_or_keyword")
+    check.equal(schema.fields[9].keyword, "page")
+    schema.fields[1].choices[1] = "mutated"
+    schema.fields[2].name = "mutated"
+    local fresh = ImageProfile.schema()
+    check.equal(fresh.fields[1].choices[1], "solid")
+    check.equal(fresh.fields[2].name, "fit")
+end }
+
+tests[#tests + 1] = { "options reject non-profile tables", function()
+    local options, err = ImageProfile.options({})
+    check.equal(options, nil)
+    check.equal(err, "value is not an image profile")
 end }
 
 tests[#tests + 1] = { "enum settings reject unsupported values and types", function()
