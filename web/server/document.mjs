@@ -6,9 +6,11 @@ import { basename, dirname, join } from "node:path";
 import { randomUUID } from "node:crypto";
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const JPEG_PREFIX = Buffer.from([0xff, 0xd8, 0xff]);
 
 function imageFormat(header) {
   if (header.subarray(0, PNG_SIGNATURE.length).equals(PNG_SIGNATURE)) return "png";
+  if (header.subarray(0, JPEG_PREFIX.length).equals(JPEG_PREFIX)) return "jpeg";
   const separator = header[2];
   if (header[0] === 0x50 && header[1] === 0x34
       && (separator === 0x23 || separator === 0x20

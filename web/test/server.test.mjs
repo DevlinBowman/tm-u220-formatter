@@ -19,6 +19,7 @@ const aliases = resolve(root, "config/directives/aliases.u220a");
 const profile = resolve(root, "config/printers/local.u220p");
 const imageProfile = resolve(root, "config/images/default.u220i");
 const chicken = resolve(root, "test/assets/Chicken.png");
+const jpeg = resolve(root, "test/assets/jpeg/color-grid-7x5.jpg");
 
 async function temporaryDocument(source = "ORIGINAL") {
   const directory = await mkdtemp(join(tmpdir(), "u220-editor-test-"));
@@ -154,6 +155,20 @@ test("compiler bridge renders a direct PNG from its canonical printer mask", asy
   assert.equal(result.paper_preview.max_y_vertical_units, 260);
   assert.equal(createHash("sha256").update(mask).digest("hex"),
     "57e7f56d8ef5b7aa044976e74f4947c2db59863d6ffab6ce691bca417f50dcf5");
+});
+
+test("compiler bridge renders a direct JPEG from its canonical printer mask", async () => {
+  const result = await compileTarget(jpeg, { root, profile, imageProfile });
+  const segment = result.lines[0].segments[0];
+
+  assert.equal(result.valid, true);
+  assert.equal(result.input_kind, "image");
+  assert.equal(segment.mask_width_dots, 200);
+  assert.equal(segment.mask_height_dots, 129);
+  assert.equal(segment.mask_data.length, 6450);
+  assert.equal(result.paper_preview.max_y_vertical_units, 276);
+  assert.equal(createHash("sha256").update(Buffer.from(segment.mask_data, "hex")).digest("hex"),
+    "137e6175ceec51227b193db50c5b7f259899b2d15ae9686844e444a90b8fe045");
 });
 
 test("direct PNG sessions expose description text without making it compiler input", async () => {
