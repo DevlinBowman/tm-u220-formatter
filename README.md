@@ -43,7 +43,8 @@ appropriate for their machine and network.
 - UTF-8 input mapped through a redistributable standard code-page catalog
 - Plain text plus native alignment, font, emphasis, color, table, image, feed,
   and cut directives
-- Direct PBM/PNG printing with profile-driven sizing, resampling, and dithering
+- Direct PBM/PNG/JPEG printing with profile-driven sizing, resampling, and
+  dithering
 - Fast whole-job LPD printing, optional checkpointed live printing, and an
   advanced one-shot RAW TCP transport
 - Strict inspection, device-query decoding, and per-machine printing policy
@@ -185,8 +186,8 @@ For a one-line formatted job, image paths are relative to the directory where
 
 The versioned image profile edited by `220 config` controls default size, fit,
 resampling, dithering, density, inversion, registration, and trailing spacing.
-See the [printhead image guide](docs/printhead-images.md). JPEG decoding is not
-yet included.
+See the [printhead image guide](docs/printhead-images.md). JPEG decoding is
+delegated to a pinned, bounded decoder shipped with the formatter.
 
 Use `--text` for guaranteed literal input and `--ftext` or
 `--formatted-text` for an interpreted string. With no input argument, `check`,

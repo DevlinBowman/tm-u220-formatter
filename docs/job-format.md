@@ -278,7 +278,7 @@ reports the four lines, advance to cutter position, and installed cut shape.
 
 ## Printhead images
 
-`@image` places a PBM or PNG companion file without converting it to text:
+`@image` places a PBM, PNG, or JPEG companion file without converting it to text:
 
 ```text
 @image art/logo.pbm
@@ -304,11 +304,17 @@ and the trailing paper gap. Its checked-in default is
 80 x 72 dpi. Detail mode is 160 x 72 dpi and the interpreter prevents adjacent
 horizontal strikes required by the TM-U220 hardware.
 
-Strict binary PBM (`P4`) and non-interlaced 8-bit PNG are accepted. JPEG is not
-yet supported. A PBM or PNG path may also be passed directly to `check`,
-`render`, `compile`, `preview`, or `print`; it becomes a one-image job using
-profile defaults. Direct image preview is read-only and paints the exact final
-printer-dot mask.
+Strict binary PBM (`P4`), non-interlaced 8-bit PNG, and bounded 8-bit JPEG are
+accepted. JPEG baseline, extended sequential, and progressive frames may use
+one or three components. Four-component JPEGs require canonical Adobe APP14
+metadata identifying CMYK or YCCK samples. A supported image path may also be
+passed directly to `check`, `render`, `compile`, `preview`, or `print`; it
+becomes a one-image job using profile defaults. Direct image preview is
+read-only and paints the exact final printer-dot mask.
+
+Image sources are capped at 1 MiB each, 4096 pixels per dimension, and
+4,194,304 decoded pixels. A job may contain up to 16 images and 4 MiB of source
+image data in total.
 
 ## Text and wrapping
 

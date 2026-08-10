@@ -8,7 +8,7 @@ printer transport.
 ## Domain boundary
 
 ```text
-local PBM/PNG --image profile--> grayscale/one-bit raster --> safe dot mask
+local PBM/PNG/JPEG --image profile--> grayscale/one-bit raster --> safe dot mask
                                                                |
                                                                v
                                                  eight-row ESC * bands
@@ -59,11 +59,20 @@ paths are anchored to the directory where `220` was invoked:
 
 Standard input deliberately receives no implicit asset directory.
 
-Supported image files are strict binary PBM (`P4`) and non-interlaced 8-bit PNG.
-PNG grayscale, RGB, indexed-color, grayscale-alpha, and RGBA inputs are reduced
-to luminance with transparency composited on white. JPEG is not decoded yet.
+Supported image files are strict binary PBM (`P4`), non-interlaced 8-bit PNG,
+and bounded 8-bit JPEG. PNG grayscale, RGB, indexed-color, grayscale-alpha, and
+RGBA inputs are reduced to luminance with transparency composited on white.
+JPEG baseline, extended sequential, and progressive frames may use one, three,
+or four components. Four-component input requires canonical Adobe APP14
+metadata identifying CMYK (transform 0) or YCCK (transform 2) samples. JPEG
+pixels are decoded in stored order; EXIF orientation and ICC color profiles are
+not applied.
 
-A PBM or PNG can also be the complete command input:
+Each source image is limited to 1 MiB and either dimension to 4096 pixels. A
+job may contain at most 16 images, 4 MiB of source image data, and 4,194,304
+decoded source pixels in total. These limits apply before resizing for paper.
+
+A supported image can also be the complete command input:
 
 ```sh
 220 preview art/chicken.png
@@ -71,6 +80,11 @@ A PBM or PNG can also be the complete command input:
 220 compile art/chicken.png --hex
 220 print art/chicken.png
 ```
+
+For a direct image in your home directory, leave the tilde unquoted or quote
+`$HOME` instead: `220 print ~/Downloads/chicken.jpg` or
+`220 print "$HOME/Downloads/chicken.jpg"`. A single-quoted `~/...` is a literal
+path under normal shell rules.
 
 Direct images use the profile's default full-page/automatic box. `220 preview`
 opens an image as a read-only session and paints the exact final printer-dot
@@ -100,7 +114,8 @@ default_height_cells=auto
 The fields own target size, contain/cover/stretch fitting, deterministic
 nearest/area/bilinear resampling, threshold/ordered/Floyd dithering, inversion,
 physical density, multi-band registration, and the deliberate post-image paper
-gap. PNG transparency is composited on white before interpretation.
+gap. PNG transparency is composited on white before interpretation. JPEG uses
+the same integer luminance conversion after deterministic bounded decoding.
 
 Solid density is the safe default at 80 x 72 dpi. Detail density uses
 160 x 72 dpi and automatically prevents horizontally adjacent strikes before
