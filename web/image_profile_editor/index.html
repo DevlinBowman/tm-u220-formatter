@@ -1,0 +1,104 @@
+<!doctype html>
+<!-- Provides a fixed-target image-profile workspace with exact compiler-owned printer dots. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>U220 Image Profile</title>
+    <link rel="stylesheet" href="/styles/tokens.css">
+    <link rel="stylesheet" href="/styles/shell.css">
+    <link rel="stylesheet" href="/styles/receipt.css">
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="app-bar">
+      <a class="brand" href="./" aria-label="U220 Image Profile home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span><strong>U220 Image Profile</strong><small>Printhead interpretation</small></span>
+      </a>
+      <nav class="file-actions" aria-label="Profile actions">
+        <button class="button button-secondary" id="revert-button" type="button">Revert changes</button>
+        <button class="button button-primary" id="save-button" type="button"
+          aria-keyshortcuts="Meta+S Control+S">Save profile</button>
+      </nav>
+    </header>
+
+    <main class="workspace image-profile-workspace">
+      <section class="panel controls-panel" aria-labelledby="profile-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Interpretation profile</span>
+            <h1 id="profile-title"><span id="profile-name">default.u220i</span><i id="dirty-dot"
+              aria-label="Unsaved changes" aria-hidden="true"></i></h1>
+          </div>
+          <span class="profile-version" id="profile-version">Version —</span>
+        </header>
+        <div class="controls-scroll">
+          <section class="control-group" aria-labelledby="mask-controls-title">
+            <div class="control-group-heading">
+              <span class="eyebrow">Final dot mask</span>
+              <h2 id="mask-controls-title">Image interpretation</h2>
+            </div>
+            <div class="profile-fields" id="mask-fields"></div>
+            <p class="fit-note" id="fit-note" hidden>Fit has no visible effect while height is automatic; automatic height already preserves the source’s physical aspect ratio.</p>
+          </section>
+          <section class="control-group" aria-labelledby="print-controls-title">
+            <div class="control-group-heading">
+              <span class="eyebrow">Printer behavior</span>
+              <h2 id="print-controls-title">Band movement</h2>
+            </div>
+            <div class="profile-fields" id="print-fields"></div>
+          </section>
+        </div>
+        <footer class="panel-footer profile-boundary">
+          <span id="save-state">Loading profile</span>
+          <span>Profile only · source image is read-only</span>
+        </footer>
+      </section>
+
+      <section class="panel preview-panel" aria-labelledby="preview-title">
+        <header class="panel-header">
+          <div class="panel-heading">
+            <span class="eyebrow">Printer output · read-only source</span>
+            <h2 id="preview-title">Loading image</h2>
+          </div>
+          <div class="render-state" id="render-state" data-tone="idle" role="status" aria-live="polite">
+            <span></span><b>Connecting</b>
+          </div>
+        </header>
+        <div class="preview-scroll" id="preview-scroll">
+          <div class="preview-stage">
+            <aside class="profile-card image-metrics" id="image-metrics" hidden>
+              <span id="profile-model"></span><span id="profile-paper"></span><span id="profile-columns"></span>
+              <span id="metric-target">Target unavailable</span>
+              <span id="metric-density">Density unavailable</span>
+              <span id="metric-dots">Dots unavailable</span>
+              <span id="metric-bands">Bands unavailable</span>
+              <span id="metric-bytes">Bytes unavailable</span>
+            </aside>
+            <article class="receipt" id="receipt" aria-label="Exact printer-dot preview">
+              <div class="receipt-lines" id="receipt-lines"></div>
+              <div class="receipt-placeholder" id="receipt-placeholder">
+                <span class="printer-glyph" aria-hidden="true"></span>
+                <strong>Preview is getting ready</strong>
+                <p>The exact final printer dots will appear here.</p>
+              </div>
+              <footer class="receipt-finish" id="receipt-finish" hidden></footer>
+            </article>
+          </div>
+        </div>
+        <section class="diagnostics" id="diagnostics" aria-labelledby="diagnostics-title">
+          <button class="diagnostics-heading" id="diagnostics-toggle" type="button"
+            aria-expanded="false" aria-controls="diagnostics-list">
+            <span><i aria-hidden="true"></i><b id="diagnostics-title">Diagnostics</b></span>
+            <span class="diagnostics-count" id="diagnostics-count">0</span>
+          </button>
+          <ol class="diagnostics-list" id="diagnostics-list" hidden></ol>
+        </section>
+      </section>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

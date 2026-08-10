@@ -109,6 +109,54 @@ tests[#tests + 1] = { "preview delegates only to the browser editor launcher", f
     check.equal(call.options.image_profile_path, "/user/image_profile")
 end }
 
+tests[#tests + 1] = { "image-profile delegates one image and the active printer profile", function()
+    local call, config_facts, active_name, preview_called, print_called, error_text
+    local facts = { marker = true }
+    local editor_runtime = { editor = true }
+    local status = run.main({ "image-profile", "Chicken.jpg" }, {
+        config_files = { active_path = function(name, received)
+            active_name, config_facts = name, received
+            return "/user/printers/local.u220p"
+        end },
+        config_files_runtime = facts,
+        image_profile_editor_launcher = { run = function(input, options, runtime)
+            call = { input = input, options = options, runtime = runtime }
+            return 7, "editor could not open"
+        end },
+        image_profile_editor_runtime = editor_runtime,
+        editor_launcher = { run = function() preview_called = true end },
+        print_service = { print = function() print_called = true end },
+        write_error = function(value) error_text = value end,
+    })
+    check.equal(status, 7)
+    check.equal(active_name, "profile")
+    check.equal(config_facts, facts)
+    check.equal(call.input, "Chicken.jpg")
+    check.equal(call.options.profile_path, "/user/printers/local.u220p")
+    check.equal(call.options.image_profile_path, nil)
+    check.equal(call.runtime, editor_runtime)
+    check.equal(preview_called, nil)
+    check.equal(print_called, nil)
+    check.equal(error_text, "editor could not open\n")
+end }
+
+tests[#tests + 1] = { "image-profile fails before launch when configuration is unavailable", function()
+    local launched, error_text
+    local status = run.main({ "image-profile", "Chicken.jpg" }, {
+        config_files = { active_path = function()
+            return nil, "HOME is required"
+        end },
+        image_profile_editor_launcher = {
+            run = function() launched = true end,
+        },
+        write_error = function(value) error_text = value end,
+    })
+    check.equal(status, 1)
+    check.equal(launched, nil)
+    check.contains(error_text, "AUTHORING_CONFIG_PATH_INVALID")
+    check.contains(error_text, "HOME is required")
+end }
+
 tests[#tests + 1] = { "developer glyphs delegates only to its checkout launcher", function()
     local received, preview_called, error_text
     local glyph_runtime = { marker = true }

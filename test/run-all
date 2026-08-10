@@ -12,6 +12,7 @@ node --test test/cli/*.test.mjs
 node --test test/configuration/*.test.mjs
 node --test test/install/*.test.mjs
 node --test test/image_assets/*.test.mjs
+node --test test/image_profile_editor/*.test.mjs
 node --test test/live_session/*.test.mjs
 node --test test/printing_setup/*.test.mjs
 node --test test/printing_removal/*.test.mjs

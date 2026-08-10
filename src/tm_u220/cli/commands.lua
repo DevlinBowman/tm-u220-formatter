@@ -19,10 +19,16 @@ end
 
 local AUTHORING = {
     { name = "config", usage = "config",
-        summary = "Open editable aliases and the authoring profile in Vim.", arguments = 0,
+        summary = "Open editable authoring configuration in Vim.", arguments = 0,
         options = {}, notes = {
-            "Vim opens the directive aliases and authoring profile in separate tabs.",
+            "Vim opens the directive aliases, printer profile, and image profile in three tabs.",
             "Installed releases seed user-owned copies; managed printer policy is unchanged.",
+        } },
+    { name = "image-profile", usage = "image-profile <image>",
+        summary = "Tune image interpretation in a live printer-dot editor.", arguments = 1,
+        input = input("image", { "image" }), options = {}, notes = {
+            "The selected image is read-only; Save updates the active image profile.",
+            "Previewing and saving never print or contact the printer.",
         } },
     { name = "check", usage = "check [<input>] [options]",
         summary = "Validate a job without emitting printer bytes.", minimum = 0, maximum = 1,

@@ -44,6 +44,7 @@ local suites = {
     "unit.terminal_state_test",
     "unit.editor_launcher_test",
     "unit.glyph_editor_launcher_test",
+    "unit.image_profile_editor_launcher_test",
     "unit.helper_process_test",
     "unit.image_asset_reader_test",
     "unit.image_input_test",

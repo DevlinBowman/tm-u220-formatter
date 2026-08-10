@@ -28,6 +28,7 @@ tests[#tests + 1] = { "usage failures stay concise and point to explicit help", 
         { { "definitely-not-a-command" },
             "unknown command: definitely-not-a-command" },
         { { "preview" }, "preview expects 1 argument" },
+        { { "image-profile" }, "image-profile expects 1 argument" },
         { { "edit", "receipt.u220" }, "unknown command: edit" },
         { { "check", "hello", "--bogus" }, "unknown option: --bogus" },
     }
@@ -55,6 +56,8 @@ end }
 tests[#tests + 1] = { "focused help is equivalent across supported spellings", function()
     local cases = {
         { { "help", "print" }, { "print", "--help" }, "print" },
+        { { "help", "image-profile" },
+            { "image-profile", "--help" }, "image-profile" },
         { { "help", "printer" }, { "printer", "-h" }, "printer" },
         { { "help", "printer", "setup" },
             { "printer", "setup", "--help" }, "printer setup" },
@@ -80,12 +83,18 @@ tests[#tests + 1] = { "focused help is equivalent across supported spellings", f
     check.contains(help.text, "220 render receipt.u220")
     check.contains(help.text, "220 directives")
     check.contains(help.text, "220 config")
+    check.contains(help.text, "image-profile")
     check.contains(help.text, "220 dev glyphs")
     check.falsy(help.text:find("220 edit", 1, true))
 
     local config = assert(help.render("config"))
-    check.contains(config, "Open editable aliases")
+    check.contains(config, "Open editable authoring configuration")
+    check.contains(config, "three tabs")
     check.contains(config, "user-owned copies")
+    local image_profile = assert(help.render("image-profile"))
+    check.contains(image_profile, "Usage:\n  220 image-profile <image>")
+    check.contains(image_profile, "live printer-dot editor")
+    check.contains(image_profile, "never print or contact the printer")
     local directives = assert(help.render("directives"))
     check.contains(directives, "220 rules directives")
 

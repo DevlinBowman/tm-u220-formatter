@@ -80,6 +80,28 @@ tests[#tests + 1] = { "preview accepts one file and its profile option", functio
     check.equal(value.options.profile_path, "printer.u220p")
 end }
 
+tests[#tests + 1] = { "image-profile accepts exactly one file without overrides", function()
+    local value = assert(parse.parse({ "image-profile", "Chicken.jpg" }))
+    check.equal(value.command, "image-profile")
+    check.equal(value.input, "Chicken.jpg")
+    check.equal(value.options.input_kind, "image")
+    check.equal(assert(parse.parse({ "image-profile", "--", "-photo.jpg" })).input,
+        "-photo.jpg")
+
+    local cases = {
+        { { "image-profile" }, "expects 1 argument" },
+        { { "image-profile", "one.png", "two.png" }, "expects 1 argument" },
+        { { "image-profile", "-" }, "standard input is not supported" },
+        { { "image-profile", "one.png", "--profile", "other.u220p" },
+            "--profile is not accepted with image-profile" },
+    }
+    for _, case in ipairs(cases) do
+        local invalid, err = parse.parse(case[1])
+        check.equal(invalid, nil)
+        check.contains(err, case[2])
+    end
+end }
+
 tests[#tests + 1] = { "print CLI selects LPD without copying machine policy", function()
     local value = assert(parse.parse({ "print", "receipt.u220" }))
     check.equal(value.options.delivery, "batch")
