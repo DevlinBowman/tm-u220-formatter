@@ -17,3 +17,7 @@ documentation, software, firmware, logos, or resident-ROM font data.
 This distribution includes character mapping data derived from Unicode, Inc.
 mapping files and provided under the Unicode License V3. See
 LICENSES/Unicode-3.0.txt and THIRD_PARTY_NOTICES.md.
+
+This distribution also includes the decoder-only portion of jpeg-js 0.4.4.
+Its BSD-3-Clause and Apache-2.0 notices, exact scope, and provenance are recorded
+under libexec/image_assets/jpeg/vendor and in THIRD_PARTY_NOTICES.md.

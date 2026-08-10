@@ -7,6 +7,7 @@ with unresolved redistribution rights must not enter a public release.
 | Material | Origin and method | License or status |
 | --- | --- | --- |
 | Application code, tests, documentation, UI, and project-authored portions of examples | Authored in this repository by DevlinBowman and contributors | MIT |
+| `jpeg-js` 0.4.4 decoder | Unmodified decoder-only source from the pinned package; exact package and file hashes are in the [vendor provenance](../libexec/image_assets/jpeg/vendor/jpeg-js-0.4.4/PROVENANCE.md) and its distribution scope is recorded in [third-party notices](../THIRD_PARTY_NOTICES.md) | BSD-3-Clause package terms and retained Apache-2.0 decoder notice |
 | Standard character-page modules and browser-safe PC437 descriptor | Deterministically generated from pinned Unicode mapping files; exact inputs and hashes are in [third-party notices](../THIRD_PARTY_NOTICES.md) | Unicode-3.0 data in project-authored Lua and JavaScript containers |
 | PC858 character-page module | Generated from pinned Unicode CP850 data with the documented `D5` euro substitution | Unicode-3.0 data plus a project-authored transformation |
 | `examples/chars.txt` | Deterministically regenerated from the public standard-page mappings | Generated artifact; same mapping-data terms as its inputs |

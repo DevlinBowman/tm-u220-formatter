@@ -1,5 +1,24 @@
 # Third-party notices
 
+## jpeg-js decoder
+
+The deterministic JPEG image path includes only the unmodified decoder from
+[`jpeg-js` 0.4.4](https://github.com/eugeneware/jpeg-js). It is shipped as
+source inside the isolated image-materialization helper; the encoder, package
+entry point, declarations, and development files are not distributed. No npm
+installation is performed at runtime.
+
+The package identifies itself as BSD-3-Clause, while the decoder retains the
+Apache-2.0 copyright and license header from its `jpgjs` lineage. Both complete
+license texts accompany the decoder:
+
+- [BSD-3-Clause](libexec/image_assets/jpeg/vendor/jpeg-js-0.4.4/LICENSE.BSD-3-Clause)
+- [Apache-2.0](libexec/image_assets/jpeg/vendor/jpeg-js-0.4.4/LICENSE.Apache-2.0)
+
+The reviewed package URL, package hash, exact decoder hash, and scope are
+recorded in the decoder's
+[provenance file](libexec/image_assets/jpeg/vendor/jpeg-js-0.4.4/PROVENANCE.md).
+
 ## Unicode character mapping data
 
 The generated Lua mappings for PC437, PC850, PC852, PC860, PC863, PC865,
