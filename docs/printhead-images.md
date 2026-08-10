@@ -91,18 +91,37 @@ opens an image as a read-only session and paints the exact final printer-dot
 mask; image bytes never enter the source editor or its save path. Put `@image`
 in a receipt when the image should be previewed alongside text.
 
+## Live profile editor
+
+Open a direct PNG, JPEG, or binary PBM image for interpretation tuning:
+
+```sh
+220 image-profile art/chicken.png
+```
+
+The selected image is resolved when the command starts, then remains fixed and
+read-only. Every draft profile is parsed and compiled through the canonical
+direct-image pipeline, so the live paper view paints the exact final printer-dot
+mask rather than an approximate browser conversion. Revert restores the saved
+settings. Save or Command-S updates the active image profile.
+
+This workspace exposes preview geometry and diagnostics only. It has no print
+action, emits no printer bytes to the browser, and does not contact the printer.
+Stop its loopback server with Ctrl-C when tuning is finished.
+
 ## Interpretation profile
 
 Image interpretation uses a separate versioned data profile rather than adding
 artistic choices to the physical printer profile. The shipped file is
-`config/images/default.u220i`; `220 config` opens its active editable copy.
+`config/images/default.u220i`; `220 config` opens its active editable copy as
+the third of three Vim tabs.
 
 ```text
 !tm-u220 image-profile 1
 density=solid
 fit=contain
-resample=nearest
-dither=threshold
+resample=bilinear
+dither=floyd
 threshold=128
 invert=off
 unidirectional=on
@@ -111,17 +130,45 @@ default_width_cells=page
 default_height_cells=auto
 ```
 
-The fields own target size, contain/cover/stretch fitting, deterministic
-nearest/area/bilinear resampling, threshold/ordered/Floyd dithering, inversion,
-physical density, multi-band registration, and the deliberate post-image paper
-gap. PNG transparency is composited on white before interpretation. JPEG uses
-the same integer luminance conversion after deterministic bounded decoding.
+| Field | Interpretation |
+| --- | --- |
+| `density` | `solid` uses 80 × 72 dpi and permits adjacent impacts; `detail` uses 160 × 72 dpi but forbids horizontally adjacent impacts. |
+| `fit` | `contain` and `cover` preserve physical aspect ratio; `stretch` fills the requested box. |
+| `resample` | `nearest` preserves hard source pixels, `area` averages reductions, and `bilinear` interpolates neighboring samples. |
+| `dither` | Selects `threshold`, `ordered`, or `floyd` conversion from luminance to physical strikes. |
+| `threshold` | Sets the black/white decision level from 0 through 255; a higher value produces more strikes. |
+| `invert` | Reverses source luminance before dithering. |
+| `unidirectional` | Enables unidirectional bit-image bands for registration. |
+| `trailing_gap_vertical_units` | Adds the deliberate paper gap after the final image band. |
+| `default_width_cells` | Supplies `page` or a positive default width when `@image` omits its box. |
+| `default_height_cells` | Supplies `auto` or a positive default height when `@image` omits its box. |
 
-Solid density is the safe default at 80 x 72 dpi. Detail density uses
-160 x 72 dpi and automatically prevents horizontally adjacent strikes before
-the band packer independently validates the same hardware rule. Contain and
-cover preserve physical aspect ratio despite the printer's asymmetric dot
-density; stretch explicitly fills the authored box.
+PNG transparency is composited on white before interpretation. JPEG uses the
+same integer luminance conversion after deterministic bounded decoding.
+
+### Dithering and physical detail
+
+The print head remains one-bit hardware: every final position is either struck
+or left blank. Dithering creates the perception of tone by changing the spatial
+density of those impacts; it does not create gray ink.
+
+- `threshold` makes one direct luminance decision at each target position. It
+  gives hard silhouettes and loses intermediate tone most readily.
+- `ordered` offsets that decision over a repeating 4 × 4 Bayer pattern. Gray
+  regions become stable, regular impact patterns.
+- `floyd` propagates quantization error into nearby positions. Its less regular
+  impact pattern usually retains more photographic shading.
+
+For photographs, `resample=bilinear` with `dither=floyd` is the recommended
+starting point. The live editor makes the resulting physical mask visible before
+saving it.
+
+Solid density is the safe 80 × 72 dpi default and can produce uninterrupted
+dark regions. Detail density provides twice as many horizontal positions at
+160 × 72 dpi, but the TM-U220 mode cannot safely strike horizontally adjacent
+positions. The preparation stage removes such adjacency and the band packer
+validates it again, so detail mode can look lighter and is not automatically
+better for photographs.
 
 ## Asset boundary
 

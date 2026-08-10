@@ -56,7 +56,7 @@ receives only finished text or native U220 source.
 - `profile` owns strict saved profile files and decoding of supported
   bidirectional settings-query responses.
 - `config` owns the fixed authoring-file catalog and selects repository or
-  per-user aliases and profile paths according to release mode.
+  per-user alias, printer-profile, and image-profile paths by release mode.
 - `spec` owns immutable TM-U220 model facts, effective profiles, and supported
   command definitions.
 - `printhead` owns format-neutral grayscale and one-bit rasters, strict PBM and
@@ -94,8 +94,8 @@ receives only finished text or native U220 source.
   compilation, and print flow.
 - `cli` parses commands and delegates to `app`.
 - `web` owns the loopback editor session and HTML/CSS presentation. It invokes
-  the application compilation boundary, saves only to the originally opened
-  file, and has no dependency on either transport.
+  the application compilation boundary, saves only to the session's fixed
+  document or image profile, and has no dependency on either transport.
 
 Feature domains do not import legacy implementations. Cross-domain behavior is
 wired in `app`, rather than embedding formatter policy in the byte codec or
@@ -103,18 +103,19 @@ device facts in the job parser.
 
 ## Authoring configuration boundary
 
-CLI orchestration resolves the active directive-alias catalog and authoring
-profile, then passes those explicit paths into compilation and preview services.
-The parser, formatter, web workspace, and transports do not discover user home
-directories or choose configuration ownership modes themselves.
+CLI orchestration resolves the active directive-alias catalog, authoring printer
+profile, and image profile, then passes those explicit paths into compilation
+and preview services. The parser, formatter, web workspace, and transports do
+not discover user home directories or choose configuration ownership modes
+themselves.
 
-In a checkout, the fixed catalog resolves directly to the two repository
+In a checkout, the fixed catalog resolves directly to the three repository
 working files. In a managed release, bundled files remain factory templates and
 the private configuration helper lazily seeds user-owned copies under the
-configured XDG/HOME root before opening both in fixed Vim tabs. Seeding refuses
-unsafe directory, ownership, link, mode, and size state; it never overwrites an
-existing file. The user copies are intentionally mutable and outside the
-content-addressed release.
+configured XDG/HOME root before opening all three in fixed Vim tabs. Seeding
+refuses unsafe directory, ownership, link, mode, and size state; it never
+overwrites an existing file. The user copies are intentionally mutable and
+outside the content-addressed release.
 
 This authoring boundary has no path to the root-owned printing manifest,
 physical profile, or privileged connection rules. Local LPD and live routes
@@ -130,6 +131,12 @@ same interpreted or plain preparation and formatting path as a file. Preview
 responses contain canonical segment positions, advances, line spacing, paper
 motion, and cutter events; JavaScript only maps that plan into paper geometry
 and dispatches it to one of two visual renderers.
+
+`220 image-profile IMAGE` uses a separate loopback workspace with one fixed,
+read-only direct image and one fixed active image-profile destination. Drafts
+are parsed and compiled through the same Lua image pipeline, and the browser
+receives exact final dot-mask geometry rather than reinterpreting source pixels.
+The workspace exposes no printer transport.
 
 The browser surface models document layout and printer style state, including
 paper width, alignment, color, emphasis, double strike, double dimensions,

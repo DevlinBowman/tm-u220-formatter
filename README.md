@@ -45,6 +45,7 @@ appropriate for their machine and network.
   and cut directives
 - Direct PBM/PNG/JPEG printing with profile-driven sizing, resampling, and
   dithering
+- Live image-profile tuning against the exact final printer-dot mask
 - Fast whole-job LPD printing, optional checkpointed live printing, and an
   advanced one-shot RAW TCP transport
 - Strict inspection, device-query decoding, and per-machine printing policy
@@ -184,10 +185,22 @@ For a one-line formatted job, image paths are relative to the directory where
 
 `@image` is job-language syntax, not a shell command or a `220` subcommand.
 
-The versioned image profile edited by `220 config` controls default size, fit,
-resampling, dithering, density, inversion, registration, and trailing spacing.
-See the [printhead image guide](docs/printhead-images.md). JPEG decoding is
-delegated to a pinned, bounded decoder shipped with the formatter.
+Tune how a direct PNG, JPEG, or binary PBM image is interpreted with:
+
+```sh
+220 image-profile art/chicken.png
+```
+
+The selected image remains fixed and read-only while changes are compiled
+through the normal image pipeline into an exact live printer-dot preview.
+Revert restores the saved settings; Save or Command-S updates the active image
+profile. The editor has no print action and does not contact the printer.
+
+The same versioned image profile is the third tab opened by `220 config`. It
+controls default size, fit, resampling, dithering, density, inversion,
+registration, and trailing spacing. See the
+[printhead image guide](docs/printhead-images.md). JPEG decoding is delegated to
+a pinned, bounded decoder shipped with the formatter.
 
 Use `--text` for guaranteed literal input and `--ftext` or
 `--formatted-text` for an interpreted string. With no input argument, `check`,
@@ -265,11 +278,12 @@ printer network. See [local LPD printing](docs/lpd-printing.md),
 | `220 render INPUT` | Render the compiled receipt plan in the terminal or JSON |
 | `220 compile INPUT` | Write raw ESC/POS bytes or hexadecimal output |
 | `220 preview FILE` | Open the live browser editor and preview |
+| `220 image-profile IMAGE` | Tune image interpretation against a live printer-dot preview |
 | `220 print INPUT` | Compile and submit through the installed printer policy |
 | `220 inspect FILE` | Parse and describe an existing byte stream |
 | `220 directives` | List the compact native directive and alias reference |
 | `220 rules [TOPIC]` | Explain authoring and hardware rules |
-| `220 config` | Edit user aliases and the authoring profile in Vim |
+| `220 config` | Edit aliases, printer profile, and image profile in Vim |
 | `220 profile-queries` | List supported transport-neutral device queries |
 | `220 setup-printing` | Review and install the per-machine printing policy |
 | `220 printing-status` | Audit the installed policy without network I/O |

@@ -21,10 +21,13 @@ line tokens themselves.
 - `220 preview FILE` owns the live browser workspace. `220 render [INPUT]` owns
   terminal, JSON, and file rendering; the former `edit` command is removed and
   has no alias.
+- `220 image-profile IMAGE` opens one PNG, JPEG, or binary PBM as a fixed,
+  read-only source for live image-interpretation tuning. It accepts no alternate
+  filesystem target or printing option.
 - `220 directives` is the read-only compact directive and shipped-alias list;
   `220 rules directives` remains the detailed behavioral reference.
-- `220 config` opens the fixed directive-alias and authoring-profile files in
-  separate Vim tabs. It accepts no path arguments.
+- `220 config` opens the fixed directive-alias, authoring printer-profile, and
+  image-profile files in three Vim tabs. It accepts no path arguments.
 - `--` ends option parsing. It may also force an option-looking value after a
   value-taking option. `-o -` explicitly selects standard output.
 
@@ -52,20 +55,20 @@ or a real output file is selected.
 
 `220 config` is an interactive, unprivileged macOS workflow. It requires a
 normal non-root account and terminal input/output, invokes the fixed
-`/usr/bin/vim` executable without a shell, and passes only the two catalogued
+`/usr/bin/vim` executable without a shell, and passes only the three catalogued
 authoring paths after `--`. Arbitrary file selection is not part of its grammar.
 
 In a checkout, those paths are the repository working copies at
-`config/directives/aliases.u220a` and `config/printers/local.u220p`. In a
-managed installation, the release copies are immutable factory templates. A
-configuration session exclusively seeds any missing user files under an
-explicit absolute `TM_U220_CONFIG_HOME`, otherwise an absolute
-`XDG_CONFIG_HOME/tm-u220`, with `$HOME/.config/tm-u220` as the fallback.
-The relative destinations remain `directives/aliases.u220a` and
-`printers/local.u220p`; existing files are never replaced by seeding. After Vim
-closes successfully, both active files are checked through the canonical alias
-and profile parsers, and invalid saved configuration is reported as an
-operational failure.
+`config/directives/aliases.u220a`, `config/printers/local.u220p`, and
+`config/images/default.u220i`. In a managed installation, the release copies
+are immutable factory templates. A configuration session exclusively seeds any
+missing user files under an explicit absolute `TM_U220_CONFIG_HOME`, otherwise
+an absolute `XDG_CONFIG_HOME/tm-u220`, with `$HOME/.config/tm-u220` as the
+fallback. The relative destinations remain `directives/aliases.u220a`,
+`printers/local.u220p`, and `images/default.u220i`; existing files are never
+replaced by seeding. After Vim closes successfully, all three active files are
+checked through the canonical alias, printer-profile, and image-profile parsers,
+and invalid saved configuration is reported as an operational failure.
 
 Before Vim opens, the configuration helper rejects symbolic links, extra hard
 links, wrong ownership, unsafe writable modes, empty files, oversized files,
@@ -79,6 +82,23 @@ This boundary cannot select or edit the root-owned printing manifest, physical
 profile, privileged connection rules, or authorized endpoint. Those remain
 under `220 printer setup|status|deauthorize` and their independent integrity
 checks.
+
+## Image-profile editor boundary
+
+`220 image-profile IMAGE` starts a private loopback workspace for one direct
+PNG, JPEG, or binary PBM image. The image path is resolved when the command
+starts and remains fixed and read-only for that session. Browser requests cannot
+choose another image, configuration path, or asset root.
+
+Each draft is parsed by the canonical image-profile codec and compiled through
+the normal direct-image pipeline. The live view therefore receives the same
+final one-bit printer-dot mask and physical paper geometry used by compilation;
+it does not perform a second browser-side image conversion. Revert restores the
+saved profile. Save and Command-S atomically update only the active image-profile
+file, with stale on-disk revisions rejected instead of overwritten.
+
+The workspace returns preview geometry and diagnostics, not printer bytes. It
+has no print or transport route and does not contact the configured printer.
 
 ## Status codes and diagnostics
 
