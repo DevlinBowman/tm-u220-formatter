@@ -28,6 +28,8 @@ local suites = {
     "unit.image_directive_test",
     "unit.directive_alias_file_test",
     "unit.directive_whitespace_test",
+    "unit.key_value_directive_test",
+    "unit.key_value_block_test",
     "unit.tabular_directive_test",
     "unit.paper_preview_test",
     "unit.directive_chain_test",

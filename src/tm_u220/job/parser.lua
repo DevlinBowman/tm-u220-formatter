@@ -3,9 +3,11 @@ local Diagnostic = require("tm_u220.job.diagnostic")
 local Directive = require("tm_u220.job.directive")
 local AliasCatalog = require("tm_u220.job.directive.alias_catalog")
 local DirectiveSyntax = require("tm_u220.job.directive.syntax")
+local KvBlock = require("tm_u220.job.block.kv")
 
 local M = {}
 local HEADER = "!tm-u220 job 1"
+local NO_ALIASES = {}
 
 local function split_lines(source)
     local lines = {}
@@ -122,43 +124,68 @@ function M.parse(source, options)
         end
         aliases = catalog.entries
     end
+    local kv_block = KvBlock.new()
     for line_number = header_line + 1, #lines do
-        local line = lines[line_number]
+        local line, block_failure, fallback_line, kv_candidate = kv_block:process(
+            lines[line_number], line_number)
         local span = Diagnostic.line_span(line_number)
-        local escaped_directive = DirectiveSyntax.unescape_line(line)
+        if block_failure then
+            add_diagnostic(document, block_failure.code,
+                block_failure.message, block_failure.line)
+        elseif kv_candidate then
+            local operation, failure = Directive.parse(line, span, NO_ALIASES)
+            if operation and operation.kind == "kv" then
+                add_operation(document, operation)
+                line = nil
+            elseif fallback_line then
+                line = fallback_line
+            else
+                add_diagnostic(document, failure.code, failure.message, line_number)
+                line = nil
+            end
+        end
+        if line ~= nil and not block_failure then
+            local escaped_directive = DirectiveSyntax.unescape_line(line)
 
-        if line:sub(1, 2) == "##" then
-            add_text_line(document, line:sub(2), span)
-        elseif line:sub(1, 1) == "#" then
-            -- Comments have no runtime representation.
-        elseif line == HEADER then
-            add_diagnostic(
-                document,
-                "job.header.duplicate",
-                "job header may appear only once",
-                line_number
-            )
-        elseif escaped_directive then
-            add_text_line(document, escaped_directive, span)
-        elseif DirectiveSyntax.starts_line(line) then
-            local operations, failure = Directive.parse_many(line, span, aliases)
-            if failure then
+            if line:sub(1, 2) == "##" then
+                add_text_line(document, line:sub(2), span)
+            elseif line:sub(1, 1) == "#" then
+                -- Comments have no runtime representation.
+            elseif line == HEADER then
                 add_diagnostic(
                     document,
-                    failure.code,
-                    failure.message,
+                    "job.header.duplicate",
+                    "job header may appear only once",
                     line_number
                 )
-            elseif operations then
-                for _, operation in ipairs(operations) do
-                    add_operation(document, operation)
+            elseif escaped_directive then
+                add_text_line(document, escaped_directive, span)
+            elseif DirectiveSyntax.starts_line(line) then
+                local operations, failure = Directive.parse_many(line, span, aliases)
+                if failure then
+                    add_diagnostic(
+                        document,
+                        failure.code,
+                        failure.message,
+                        line_number
+                    )
+                elseif operations then
+                    for _, operation in ipairs(operations) do
+                        add_operation(document, operation)
+                    end
                 end
+            elseif line == "" then
+                add_operation(document, { kind = "line", span = span })
+            else
+                add_text_line(document, line, span)
             end
-        elseif line == "" then
-            add_operation(document, { kind = "line", span = span })
-        else
-            add_text_line(document, line, span)
         end
+    end
+
+    local block_failure = kv_block:finish()
+    if block_failure then
+        add_diagnostic(document, block_failure.code,
+            block_failure.message, block_failure.line)
     end
 
     return document

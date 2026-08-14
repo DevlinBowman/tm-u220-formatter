@@ -46,6 +46,13 @@ local function normalized_assignments(value)
     return value:gsub("[ \t]*=[ \t]*", "=")
 end
 
+local function kv_separator(arguments)
+    if arguments == nil then return nil end
+    local pipe = arguments:find("|", 1, true)
+    if pipe then return pipe end
+    return arguments:match("^.*()[=;:]")
+end
+
 local function parse_profile(arguments, span)
     arguments = normalized_assignments(arguments)
     if not arguments or arguments == "" then
@@ -145,11 +152,13 @@ function M.parse(name, arguments, span)
     end
 
     if name == "kv" then
-        local separator = arguments and arguments:find("|", 1, true)
+        local separator = kv_separator(arguments)
         local left = separator and Syntax.trim(arguments:sub(1, separator - 1))
         local right = separator and Syntax.trim(arguments:sub(separator + 1))
         if not left or left == "" or right == "" then
-            return nil, issue(name, "<left> | <right>"), true
+            return nil, issue(name,
+                "two non-blank values separated by |, or by a final =, ;, or :"),
+                true
         end
         return { kind = "kv", left = left, right = right, span = span }, nil, true
     end

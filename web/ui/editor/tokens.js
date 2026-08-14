@@ -1,8 +1,10 @@
 // Identifies directive and argument spans for paint-only source highlighting.
 // Line-owning directives keep their pipes as data instead of pipeline separators.
-const FIRST_DIRECTIVE = /^([ \t]*)(@[a-z][a-z-]*)/;
+const FIRST_DIRECTIVE =
+  /^([ \t]*)(@(?:kv_(?:start|end)(?=[ \t]*$)|[a-z][a-z-]*))/;
 const LINE_OWNING_DIRECTIVES = new Set([
-  "@image", "@kv", "@table", "@head", "@row", "@end-table",
+  "@image", "@kv", "@kv_start", "@kv_end",
+  "@table", "@head", "@row", "@end-table",
 ]);
 
 function addSpan(spans, kind, start, end, base) {
@@ -54,7 +56,8 @@ export function syntaxSpans(source, plain = false) {
   const spans = [];
   let base = 0;
   lines.forEach((line, index) => {
-    spans.push(...lineSpans(line, base));
+    const lexicalLine = line.endsWith("\r") ? line.slice(0, -1) : line;
+    spans.push(...lineSpans(lexicalLine, base));
     base += line.length + (index < lines.length - 1 ? 1 : 0);
   });
   return spans;

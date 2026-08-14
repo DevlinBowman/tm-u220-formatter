@@ -47,6 +47,24 @@ test("key-value, ordinary, and plain-mode text do not gain extra colors", () => 
   assert.deepEqual(syntaxSpans(null), []);
 });
 
+test("key-value block markers use their complete underscore names", () => {
+  const source = "  @kv_start\nLabel | value\n\t@kv_end  ";
+  const spans = syntaxSpans(source);
+  assert.deepEqual(values(source, spans, "directive"), ["@kv_start", "@kv_end"]);
+  assert.deepEqual(values(source, spans, "argument"), []);
+});
+
+test("key-value block markers retain exact offsets in CRLF source", () => {
+  const source = "@kv_start\r\nLabel | value\r\n  @kv_end\r\n";
+  const spans = syntaxSpans(source);
+  assert.deepEqual(values(source, spans, "directive"), ["@kv_start", "@kv_end"]);
+  assert.deepEqual(values(source, spans, "argument"), []);
+  assert.deepEqual(spans[1], {
+    kind: "directive", start: source.indexOf("@kv_end"),
+    end: source.indexOf("@kv_end") + "@kv_end".length,
+  });
+});
+
 test("table directives own every pipe on their source line", () => {
   const cases = [
     ["@table R,9,4LR | @font b", "R,9,4LR | @font b"],
