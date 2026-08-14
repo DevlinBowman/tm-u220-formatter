@@ -12,7 +12,7 @@ PC437 PRINTABLE CHARACTERS
   0 @ P ` p Ç É á ░ └ ╨ α ≡
 ! 1 A Q a q ü æ í ▒ ┴ ╤ ß ±
 " 2 B R b r é Æ ó ▓ ┬ ╥ Γ ≥
-# 3 C S c s â ô ú │ ├ ╙ π ≤
+## 3 C S c s â ô ú │ ├ ╙ π ≤
 $ 4 D T d t ä ö ñ ┤ ─ ╘ Σ ⌠
 % 5 E U e u à ò Ñ ╡ ┼ ╒ σ ⌡
 & 6 F V f v å û ª ╢ ╞ ╓ µ ÷

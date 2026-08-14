@@ -68,17 +68,12 @@ local function has_header(value)
     return false
 end
 
-local function preserve_heading_lines(value)
-    if value:sub(1, 1) == "#" then value = "#" .. value end
-    return (value:gsub("\n#", "\n##"))
-end
-
 function M.prepare_interpreted(value)
     local normalized, content_failure, normalization = normalize_content(value)
     if not normalized then return nil, content_failure end
     local authored_header = has_header(normalized)
     local source = authored_header and normalized
-        or HEADER .. "\n" .. preserve_heading_lines(normalized)
+        or HEADER .. "\n" .. normalized
     return source, nil, normalization, { inserted_header = not authored_header }
 end
 

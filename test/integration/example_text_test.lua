@@ -83,6 +83,8 @@ tests[#tests + 1] = { "example text prints the visible capability specimen", fun
     local aligned = {}
     for _, line in ipairs(result.preview_lines) do aligned[line.justification] = true end
     check.truthy(aligned.left and aligned.center and aligned.right)
+    check.truthy(find_line(result.preview_lines,
+        "# 3 C S c s â ô ú │ ├ ╙ π ≤"))
     check.truthy(find_line(result.preview_lines, "0       8       16      24      32"))
     check.truthy(find_line(result.preview_lines,
         "Board     Spcs         Pcs  Grd       Ea"))
