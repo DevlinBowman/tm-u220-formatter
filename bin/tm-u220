@@ -19,8 +19,14 @@ project_root="$(cd "$bin_dir/.." && pwd)"
 
 if [ -t 0 ]; then
     export TM_U220_STDIN_IS_TTY=1
+    export TM_U220_STDIN_IS_STREAM=0
 else
     export TM_U220_STDIN_IS_TTY=0
+    if [ -e /dev/fd/0 ] && [ ! -c /dev/fd/0 ]; then
+        export TM_U220_STDIN_IS_STREAM=1
+    else
+        export TM_U220_STDIN_IS_STREAM=0
+    fi
 fi
 
 if [ -t 1 ]; then

@@ -4,6 +4,7 @@ local M = {}
 
 local MARKERS = {
     stdin_is_tty = "TM_U220_STDIN_IS_TTY",
+    stdin_is_stream = "TM_U220_STDIN_IS_STREAM",
     stdout_is_tty = "TM_U220_STDOUT_IS_TTY",
 }
 
@@ -29,12 +30,16 @@ function M.snapshot(runtime)
     runtime = runtime or {}
     return {
         stdin_is_tty = fact(runtime, "stdin_is_tty"),
+        stdin_is_stream = fact(runtime, "stdin_is_stream"),
         stdout_is_tty = fact(runtime, "stdout_is_tty"),
     }
 end
 
 function M.allows_implicit_stdin(runtime)
-    return M.snapshot(runtime).stdin_is_tty ~= true
+    local state = M.snapshot(runtime)
+    if state.stdin_is_tty == true then return false end
+    if state.stdin_is_stream ~= nil then return state.stdin_is_stream end
+    return true
 end
 
 function M.allows_binary_stdout(runtime)

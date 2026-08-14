@@ -12,7 +12,7 @@ end
 function M.validate(parsed, runtime)
     local facts = terminal_runtime(runtime)
     if parsed.implicit_stdin and not Terminal.allows_implicit_stdin(facts) then
-        return nil, "input required when standard input is a terminal"
+        return nil, "input required; pipe or redirect standard input, or pass an explicit input"
     end
     local output = parsed.options and parsed.options.output
     local binary_stdout = parsed.command == "compile" and not parsed.options.hex

@@ -137,7 +137,15 @@ tests[#tests + 1] = { "terminal hazards fail before command I/O", function()
     local status, stdout, stderr = capture({ "check" }, { stdin_is_tty = true })
     check.equal(status, 2)
     check.equal(stdout, "")
-    check.contains(stderr, "input required when standard input is a terminal")
+    check.contains(stderr, "input required")
+
+    status, stdout, stderr = capture({ "print" }, {
+        stdin_is_tty = false,
+        stdin_is_stream = false,
+    })
+    check.equal(status, 2)
+    check.equal(stdout, "")
+    check.contains(stderr, "pipe or redirect standard input")
 
     status, stdout, stderr = capture({ "compile", "missing.u220" },
         { stdout_is_tty = true })

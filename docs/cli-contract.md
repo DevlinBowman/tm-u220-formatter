@@ -45,11 +45,12 @@ looks like a path is an error, including a filename with spaces; `--text` and
 `--formatted-text` are the explicit escape hatches for literal and interpreted
 strings. Only commands whose descriptors opt in may infer standard input.
 
-The shell launcher records whether standard input and output are terminals.
-Implicit standard input is rejected on a terminal, so an omitted argument cannot
-silently wait for keyboard EOF. An explicit `-` still means the user chose
-standard input. Binary `compile` output is rejected on a terminal unless `--hex`
-or a real output file is selected.
+The shell launcher records whether standard input is a real stream and whether
+standard output is a terminal. Implicit standard input is rejected for terminals,
+`/dev/null`, and closed input, so an omitted argument cannot silently wait for
+keyboard EOF or compile an accidental empty job. An explicit `-` still means the
+user chose standard input. Binary `compile` output is rejected on a terminal
+unless `--hex` or a real output file is selected.
 
 ## Authoring configuration boundary
 
