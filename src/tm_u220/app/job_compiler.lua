@@ -108,13 +108,6 @@ function M.compile(document, options)
     local profile = resolve_profile(document, options.profile, found)
     if not profile then return { diagnostics = found } end
 
-    for _, item in ipairs(finish.validate(document.ops)) do
-        found[#found + 1] = item
-    end
-    if diagnostics.has_errors(found) then
-        return { profile = profile, diagnostics = found }
-    end
-
     local context = Context.new(profile)
     local tables = TabularSession.new()
     local image_profile = options.image_profile or ImageProfile.defaults()

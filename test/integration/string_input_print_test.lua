@@ -64,7 +64,7 @@ tests[#tests + 1] = { "piped source prints through EOF with its finish directive
         check.equal(result.compilation.preview_lines[2].text, "12345")
         check.equal(submitted, check.bytes(
             "1B 40 31 32 33 34 35 0A 31 32 33 34 35 0A "
-                .. "1B 64 04 1D 56 42 00"))
+                .. "1B 64 04 1D 56 42 00 1B 40"))
     end)
 end }
 

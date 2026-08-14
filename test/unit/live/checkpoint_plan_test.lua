@@ -96,7 +96,7 @@ tests[#tests + 1] = { "motion that flushes text maps that preview line", functio
         "@text A | @feed 2",
         "@fi",
     }, "\n"))
-    check.equal(#plan.steps, 3)
+    check.equal(#plan.steps, 4)
     check.equal(plan.steps[1].action.kind, "motion")
     check.equal(plan.steps[1].action.command_id, "print.feed_lines")
     check.equal(plan.steps[1].preview_line.text, "A")
@@ -104,6 +104,10 @@ tests[#tests + 1] = { "motion that flushes text maps that preview line", functio
     check.equal(plan.steps[2].preview_line_index, nil)
     check.equal(plan.steps[3].action.kind, "cut")
     check.equal(plan.steps[3].action.shape, "partial")
+    check.equal(plan.steps[4].action.kind, "control")
+    check.equal(plan.steps[4].action.reason, "trailing_control")
+    check.equal(plan.steps[4].payload_bytes, check.bytes("1B 40"))
+    check.equal(plan.steps[4].reset_after_byte_offsets[1], 2)
     check.equal(step_bytes(plan.steps), compiled.bytes)
 end }
 

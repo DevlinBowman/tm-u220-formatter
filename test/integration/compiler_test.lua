@@ -165,7 +165,7 @@ tests[#tests + 1] = { "every cut feeds to the cutting position with Function B",
     end
 end }
 
-tests[#tests + 1] = { "@fi expands to four logical lines and installed cut", function()
+tests[#tests + 1] = { "@fi expands to feed installed cut and reset", function()
     local parsed = job.parse(table.concat({
         "!tm-u220 job 1",
         "Tail",
@@ -177,30 +177,20 @@ tests[#tests + 1] = { "@fi expands to four logical lines and installed cut", fun
 
     local result = compiler.compile(parsed, { profile = profile() })
     check.equal(#result.diagnostics, 0)
-    local feed = result.nodes[#result.nodes - 1]
-    local cut = result.nodes[#result.nodes]
+    local feed = result.nodes[#result.nodes - 2]
+    local cut = result.nodes[#result.nodes - 1]
+    local reset = result.nodes[#result.nodes]
     check.equal(feed.id, "print.feed_lines")
     check.equal(feed.args.lines, 4)
     check.equal(cut.id, "mechanism.cut")
     check.equal(cut.args.mode, "function_b_66")
     check.equal(cut.args.feed_units, 0)
+    check.equal(reset.id, "control.initialize")
+    check.equal(count_command(result.nodes, "control.initialize"), 2)
     check.equal(result.finish.feed_lines, 4)
     check.equal(result.finish.feed_units, 0)
     check.contains(preview.render(result),
         "Finish: feed 4 logical lines; advance to cutter position; partial cut")
-end }
-
-tests[#tests + 1] = { "@fi must be unique and final", function()
-    local cases = {
-        { "@fi\nTail", "FORMAT_FINISH_NOT_FINAL" },
-        { "@fi\n@cut installed", "FORMAT_FINISH_NOT_FINAL" },
-        { "@fi\n@fi", "FORMAT_FINISH_DUPLICATE" },
-    }
-    for _, case in ipairs(cases) do
-        local parsed = job.parse("!tm-u220 job 1\n" .. case[1])
-        local result = compiler.compile(parsed, { profile = profile() })
-        check.truthy(has_diagnostic(result, case[2]), case[2])
-    end
 end }
 
 tests[#tests + 1] = { "@fi rejects every argument", function()

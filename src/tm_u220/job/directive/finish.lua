@@ -1,4 +1,4 @@
--- Parses the formatter-defined terminal finish shorthand into its normalized operation.
+-- Parses the reusable feed-cut-reset shorthand into its normalized operation.
 -- Recognition metadata also lets reference and configuration checks share canonical names.
 local Syntax = require("tm_u220.job.directive.syntax")
 

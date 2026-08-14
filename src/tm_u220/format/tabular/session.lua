@@ -7,6 +7,7 @@ Session.__index = Session
 
 local HORIZONTAL_OPERATIONS = {
     init = true,
+    finish = true,
     align = true,
     font = true,
     double_width = true,
@@ -15,6 +16,7 @@ local HORIZONTAL_OPERATIONS = {
 }
 
 local function operation_label(operation)
+    if operation.kind == "finish" then return "@fi" end
     return "@" .. operation.kind:gsub("_", "-")
 end
 

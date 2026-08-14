@@ -164,6 +164,10 @@ tests[#tests + 1] = { "table failures suppress printer bytes", function()
             { "@table 3", "@font a", "@row A", "@end-table" },
             "FORMAT_TABLE_LAYOUT_CHANGED",
         },
+        {
+            { "@table 3", "@fi", "@end-table" },
+            "FORMAT_TABLE_LAYOUT_CHANGED",
+        },
         { { "@text X", "@table 3" }, "FORMAT_REQUIRES_LINE_BEGINNING" },
     }
 
@@ -178,6 +182,10 @@ tests[#tests + 1] = { "table failures suppress printer bytes", function()
     for _, node in ipairs(invalid_row.nodes or {}) do
         check.falsy(node.kind == "text", "an invalid row emitted text")
     end
+
+    local finish = compile({ "@table 3", "@fi", "@end-table" })
+    check.contains(has_diagnostic(finish, "FORMAT_TABLE_LAYOUT_CHANGED").message,
+        "@fi")
 end }
 
 return tests

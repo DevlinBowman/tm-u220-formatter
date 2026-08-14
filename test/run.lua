@@ -66,6 +66,7 @@ local suites = {
     "unit.live.live_raw_test",
     "unit.print_service_test",
     "integration.compiler_test",
+    "integration.finish_reuse_test",
     "integration.image_job_test",
     "integration.rule_test",
     "integration.tabular_test",

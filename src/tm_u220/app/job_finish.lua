@@ -1,43 +1,8 @@
-local diagnostics = require("tm_u220.core.diagnostics")
+-- Executes the reusable feed, installed-cut, and reset shorthand wherever it appears.
+-- Terminal summary metadata remains limited to a final cut-shaped operation.
 local commands = require("tm_u220.app.job_commands")
 
 local M = {}
-
-local function issue(code, message, operation)
-    return diagnostics.new(code, message, operation and operation.span)
-end
-
-function M.validate(operations)
-    local markers = {}
-    for index, operation in ipairs(operations or {}) do
-        if operation.kind == "finish" then
-            markers[#markers + 1] = index
-        end
-    end
-
-    if #markers == 0 then return {} end
-
-    local found = {}
-    for index = 2, #markers do
-        local operation = operations[markers[index]]
-        found[#found + 1] = issue(
-            "FORMAT_FINISH_DUPLICATE",
-            "@fi may appear only once",
-            operation
-        )
-    end
-
-    local marker_index = markers[1]
-    if marker_index ~= #operations then
-        found[#found + 1] = issue(
-            "FORMAT_FINISH_NOT_FINAL",
-            "@fi must be the final job operation",
-            operations[marker_index]
-        )
-    end
-
-    return found
-end
 
 function M.handle(context, operation)
     if not context:require_beginning("@fi", operation.span) then return end
@@ -50,6 +15,10 @@ function M.handle(context, operation)
     commands.handle(context, {
         kind = "cut",
         mode = "installed",
+        span = operation.span,
+    })
+    commands.handle(context, {
+        kind = "init",
         span = operation.span,
     })
 end
