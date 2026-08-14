@@ -46,6 +46,17 @@ test("canonical page-437 sources remain valid sparse byte subsets", () => {
   }
 });
 
+test("Font B anchors the authored B0 and B2 through B5 masks exactly", () => {
+  assert.deepEqual(FONT_B_PAGE_437_PATTERNS, {
+    B0: "..#...#/#...#../..#...#/#...#../..#...#/#...#../..#...#/#...#../..#...#",
+    B2: "#######/#######/#######/#######/#######/#######/#######/#######/#######",
+    B3: "..#..../..#..../..#..../..#..../..#..../..#..../..#..../..#..../..#....",
+    B4: "..#..../..#..../..#..../..#..../#.#..../..#..../..#..../..#..../..#....",
+    B5: "..#..../..#..../..#..../###..../###..../..#..../..#..../..#..../..#....",
+  });
+  assert.equal(Object.hasOwn(FONT_B_PAGE_437_PATTERNS, "B1"), false);
+});
+
 test("an unauthored byte retains the exact question-mark fallback", () => {
   const empty = createResidentGlyphLookup({
     a: Object.freeze({}), b: Object.freeze({}),
