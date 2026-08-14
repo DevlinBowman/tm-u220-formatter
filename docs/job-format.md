@@ -15,11 +15,12 @@ string through the same interpreter used for file contents. The options are
 mutually exclusive, cannot accompany a positional input, and never resolve their
 values as paths. External content generation must produce finished input first.
 
-When the header is present, only column-one `#` comment lines may precede it. A
-blank line, an indented comment, or other content before it is an error. After
-the header, column-one `#` lines are comments. In headerless interpreted input,
-ordinary `#` heading lines remain printable. Every ordinary line prints as one
-logical line, and a blank line prints an empty line.
+Column-one `#` lines are comments in every interpreted input, whether the header
+is authored or supplied implicitly by the CLI. There is no indented or inline
+comment form. When an explicit header is present, only column-one `#` comment
+lines may precede it; a blank line, indented comment, or other content before it
+is an error. Every ordinary line prints as one logical line, and a blank line
+prints an empty line.
 
 Line directives may be indented with spaces or tabs. Their name and argument
 may be separated by horizontal whitespace, and padding around validated scalar,
@@ -33,8 +34,9 @@ A literal line beginning with `@` is escaped by doubling its first character:
 @@not-a-directive
 ```
 
-That prints `@not-a-directive` followed by a line feed. Double a leading `#` as
-well: `##literal-comment` prints `#literal-comment`.
+That prints `@not-a-directive` followed by a line feed. Within the job body,
+double a leading `#` as well: `##literal-comment` prints `#literal-comment`.
+Hash-prefixed lines before an authored header are always framing comments.
 
 ## Minimal job
 
@@ -118,6 +120,10 @@ diagnostic.
 @image PATH [WIDTH HEIGHT]
 @rule PATTERN
 @kv LEFT | RIGHT
+@kv_start
+LEFT | RIGHT
+...
+@kv_end
 @table [L|R,]WIDTH[CONTENT][GROUP][,...]
 @head FIELD | FIELD [...]
 @row FIELD | FIELD [...]
@@ -126,8 +132,9 @@ diagnostic.
 @cut installed|full|partial [feed=0..255]
 ```
 
-That list is the canonical syntax. A configured authoring vocabulary provides
-concise fixed and argument-forwarding aliases:
+That list shows accepted source syntax. Its individual directives are canonical;
+the key/value block is source-only shorthand described below. A configured
+authoring vocabulary provides concise fixed and argument-forwarding aliases:
 
 | Canonical directive or sequence | Concise aliases |
 | --- | --- |
@@ -146,14 +153,46 @@ concise fixed and argument-forwarding aliases:
 | `@double-width on \| @double-height off` | `@wide` |
 | `@double-width off \| @double-height on` | `@tall` |
 | `@double-width on \| @double-height on` | `@large` |
+| `@align center \| @double-width off \| @double-height on \| @emphasis on` | `@title` |
 | `@underline single` | `@underline`, `@ul` |
 | `@underline double` | `@underline-double`, `@ul-double` |
 | `@underline off` | `@underline-off`, `@ul-off` |
 
+Printer-state modifiers can form a concise prelude to a complete ordinary text
+line. Each directive ends when its canonical arguments are complete, so another
+`@directive` can follow without a pipe:
+
+```text
+@center Jeff
+@center @bold Jeff
+@align center @emphasis on Jeff
+@title Receipt
+```
+
+For example, `@center @bold Jeff` is byte-equivalent to
+`@align center | @emphasis on | @text Jeff | @line`. The text receives the
+ordinary line feed, while both state changes remain active until changed or
+reset. This works with canonical state modifiers and aliases made entirely from
+state modifiers, including the absolute size presets and `@title`.
+
+The parser always prefers the longest valid directive arguments. Thus
+`@bold off Text` disables emphasis before printing `Text`, while `@bold Text`
+uses the argument-free bold alias before printing `Text`. Once printable text
+begins, it owns the rest of the source line: in `@center Jeff @bold`, `@bold` is
+printed literally. A terminal `@init` is the one postlude exception:
+`@title Receipt @init` prints and feeds the title line, then resets the printer
+at the beginning of the next line. `@title Receipt | @init` is equivalent. The
+first separating space or tab is structural; any additional whitespace is
+printable content. Actions such as `@feed`, `@cut`, `@fi`, and `@init` do not
+accept an inline text payload; the terminal form follows an already complete
+ordinary line instead.
+
 Every alias resolves to canonical directive input before validation and
 compilation. They may be used anywhere that their canonical targets are valid,
-including a source-line directive sequence. Size aliases are absolute presets:
+including a source-line directive prelude. Size aliases are absolute presets:
 each sets both width and height, so prior size state cannot leak into the result.
+The composite `@title` preset selects center alignment, absolute tall size, and
+bold emphasis.
 The canonical forms remain available when explicit values are clearer;
 argument-bearing `@cut installed|full|partial` and
 `@underline off|single|double` retain their canonical meanings.
@@ -194,39 +233,67 @@ parameter values. On the TM-U220 both print the same one-dot-thick underline,
 so the physical preview intentionally renders one strike row for either value.
 
 Numeric arguments are decimal integers from 0 through 255. Unknown directives,
-unknown fields, extra arguments, invalid enum values, duplicate profiles, and
-out-of-range numbers are errors. `@code-page` is narrower: its integer must name
-one of the public standard pages shown in the directive list.
+unknown fields, invalid enum values, duplicate profiles, and out-of-range
+numbers are errors. Actions and formatter utilities reject extra arguments;
+after an eligible printer-state modifier is complete, remaining material may
+instead become the ordinary text payload described above. `@code-page` is
+narrower: its integer must name one of the public standard pages shown in the
+directive list.
 
 For example, `  @align   center  ` and `@cut partial feed = 2` are equivalent
 to their compact forms. `@kv LEFT|RIGHT` and `@kv LEFT | RIGHT` are also
-equivalent; padding immediately around the field separator is not printed.
+equivalent. `@kv` keeps `|` as its canonical separator. Without a pipe, the final
+`=`, `;`, or `:` separates its fields instead. In every form, the selected
+separator and its surrounding horizontal padding are not printed.
 
 `@spacing` is measured in 1/160-inch half-dot positions. `@line-spacing`,
 `@feed-units`, `@reverse-units`, and the optional cut `feed=N` use 1/144-inch
 vertical units. `@feed` and `@reverse-lines` use logical line counts.
 
 Style directives are persistent printer state: their value remains active until
-another directive changes it or `@init` resets the state. Authors must restore a
-temporary style explicitly with its corresponding native directive.
+another directive changes it, or `@init` or `@fi` resets the state. Authors must
+otherwise restore a temporary style explicitly with its corresponding native
+directive.
 
-A source-line directive sequence keeps several directives on one source line.
-Every directive remains complete. A pipe followed by optional spaces or tabs
-and another `@directive` is a separator; ` | @` is the canonical style:
+A source-line directive prelude keeps several complete directives before one
+optional ordinary text payload. Once a directive's canonical arguments are
+complete, whitespace followed by another `@directive` begins the next one; no
+pipe is required:
 
 ```text
-@font a | @emphasis on | @double-width on | @underline double | @color red
+@font a @emphasis on @double-width on @underline double @color red
+@center @bold Receipt
+```
+
+An unescaped pipe can make a boundary explicit when that is clearer. `|` before
+another `@directive` continues the prelude, while `|` before ordinary text ends
+the prelude and is not printed:
+
+```text
+@font a | @emphasis on | @double-width on
+@align center | Receipt
 @text 0 | @tab | @text 8 | @tab | @text 16 | @line
 ```
 
-An ordinary pipe remains text in `@text A | B`, and `@rule |` still prints a
-pipe divider. Inside `@text`, a pipe followed by optional horizontal whitespace
-and an `@directive` begins the next directive. Escape that pipe as `\|` to emit
-the reserved text literally:
+Horizontal padding around a pipe boundary is optional, so `@center|Receipt` is
+equivalent to `@center | Receipt`. When a pipe begins ordinary payload, one
+following space or tab is structural; any additional whitespace is printed.
+
+After ordinary payload begins, the remainder is literal except for a terminal
+`@init` postlude. For example, `@center Jeff | @bold` prints `Jeff | @bold`,
+while `@center Jeff @init` and `@center Jeff | @init` both feed the ordinary
+line before resetting printer state. The reset must be the final source-line
+token; `@center Jeff @init later` prints `Jeff @init later` literally. Use
+`@text Jeff @init | @line` when a literal terminal `@init` must form a complete
+ordinary line. An ordinary pipe
+likewise remains text in `@text A | B`, and `@rule |` still prints a pipe
+divider. Inside `@text`, an explicit pipe
+followed by optional horizontal whitespace and an `@directive` begins the next
+directive. Escape that pipe as `\|` to emit the reserved text literally:
 `@text A \| @font b` emits `A | @font b`. `@image`, `@kv`, `@table`, `@head`,
 `@row`, and `@end-table` each own their complete source line and cannot be
 sequence members.
-The pipes in `@kv`, `@head`, and `@row` remain field separators. A sequence runs
+The pipes in `@kv`, `@head`, and `@row` remain field separators. A prelude runs
 from left to right exactly like its directives on separate source lines. An
 invalid member rejects the whole source line. Every normal placement, ordering,
 and hardware restriction still applies. Individual directive lines remain
@@ -271,10 +338,13 @@ paper from the print head to the physical cutter position, then applies the
 installed cut shape. The optional `feed=N` adds `N` 1/144-inch vertical units
 after reaching the cutter position; its default is zero.
 
-`@fi` is terminal shorthand for `@feed 4` followed by `@cut installed`. It takes
-no arguments, may appear only once, and must be the final job operation. Use
-plain `@cut` when the fixed four-line finish margin is not wanted. Preview
-reports the four lines, advance to cutter position, and installed cut shape.
+`@fi` is reusable shorthand for `@feed 4`, `@cut installed`, then `@init`. It
+takes no arguments, may appear more than once, and may be followed by later
+output, which starts from printer defaults. Each use must begin a printer line
+and cannot occur inside an active table. Use plain `@cut` when neither the fixed
+four-line margin nor reset is wanted. Preview metadata records every feed,
+advance to cutter position, and installed cut shape. When `@fi` is the final
+operation, the result also includes the legacy terminal summary.
 
 ## Printhead images
 
@@ -358,10 +428,31 @@ horizontal padding is ignored. It repeats the pattern, clipping the final
 repetition by whole glyphs to fill exactly the current line capacity, and then
 feeds one line. For example, `@rule -` prints a hyphen divider and `@rule -+`
 prints an alternating divider. The normal ` | @directive` sequence marker
-remains reserved. `@kv LEFT | RIGHT` requires the right value to fit one line.
+remains reserved. `@kv LEFT | RIGHT` (also `=`, `;`, or `:` in place of `|`)
+requires the right value to fit one line.
 It hard-slices an oversized left value into full lines, then space-pads the final
 line so the right value reaches the current capacity. Neither operation performs
 word wrapping.
+
+Consecutive key/value rows may omit their repeated directive inside a source
+wrapper:
+
+```text
+@kv_start
+Espresso | $3.50
+Oat milk = $0.75
+@kv TOTAL : $4.25
+@kv_end
+```
+
+Each physical line between the exact whole-line markers is first tried as though
+`@kv` were prepended. When the canonical `@kv` parser accepts the candidate, it
+retains the normal separators, validation, layout, and source line number. When
+it does not, the unchanged line keeps its ordinary meaning. Blank lines remain
+blank, comments remain comments, ordinary text remains text, and other valid
+directives still run. An already explicit `@kv` remains strict and reports its
+normal error if malformed. Markers may have horizontal indentation or trailing
+padding, cannot nest, and must be paired.
 
 ## Tabulated formatting
 
@@ -413,8 +504,9 @@ Headers receive no automatic styling, so the example applies the existing bold
 alias explicitly.
 
 The table freezes the current printable width, character advance, whole-line
-justification, and orientation. `@init`, `@font`, `@spacing`, `@double-width`,
-`@align`, and `@upside-down` are therefore errors until `@end-table`. Every
+justification, and orientation. `@init`, `@fi`, `@font`, `@spacing`,
+`@double-width`, `@align`, and `@upside-down` are therefore errors until
+`@end-table`. Every
 header and row is measured completely before output, positioned across the
 current line capacity, and followed by one line feed. Oversized fields,
 impossible column widths, insufficient space between column groups, invalid

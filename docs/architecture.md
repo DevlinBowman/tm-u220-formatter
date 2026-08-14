@@ -240,6 +240,20 @@ hyphens, trim spaces, or otherwise rewrite payload text.
 
 An ordinary source line supplies an implicit line feed. `@text` does not.
 Unterminated buffered text receives one final line feed at the end of a job.
+The source-line orchestrator resolves aliases through the strict canonical
+parsers before inferring optional boundaries. Complete directives can continue
+at another `@name`; an explicit pipe can disambiguate the boundary. Only
+printer-state operations may hand the remaining tail to an ordinary text line.
+The sole postlude is a terminal operation that resolves to `@init`: it is emitted
+after that ordinary line's implicit feed, preserving the reset command's
+beginning-of-printer-line invariant.
+Free-form text/rule operations and structured line owners retain their complete
+tail. Canonical directive and alias modules therefore remain unaware of this
+source-level convenience grammar.
+The key/value block source layer consumes exact `@kv_start` and `@kv_end`
+markers before ordinary line classification. It offers each undeclared line to
+the canonical `@kv` parser, preserving the physical row's original span when
+accepted and returning rejected candidates to ordinary line classification.
 `@rule` trims authoring-edge padding, repeats its remaining non-empty scalar-cell
 pattern, and clips the final repetition to fill exactly the current line
 capacity. `@kv` hard-slices an oversized left value, requires the right value to
@@ -266,9 +280,13 @@ silently changing its meaning. Preview marks upside-down segments while keeping
 the transmitted text and line order unchanged.
 
 Every cut uses Epson GS V Function B, which advances from the print head to the
-physical cutter position before cutting. Terminal `@fi` expands to four logical
-feed lines followed by an installed-shape cut. Preview reports the finish action
-using the same compiled job metadata.
+physical cutter position before cutting. Each `@fi` expands to four logical feed
+lines followed by an installed-shape cut and canonical initialization. It can
+appear repeatedly or before later output, which begins from printer defaults;
+the table session rejects it while a table is active. Preview and live
+checkpoints report every action through the canonical cut-boundary metadata.
+The singular finish summary remains a compatibility description of only a final
+cut-shaped operation.
 
 ## Trust rules
 

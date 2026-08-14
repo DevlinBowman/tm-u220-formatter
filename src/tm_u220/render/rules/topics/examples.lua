@@ -12,7 +12,7 @@ return {
   220 compile receipt.u220 -o receipt.bin
   220 compile receipt.u220 --hex
   220 render --text "@cut installed"
-  220 render --ftext "@emphasis on | @text Styled | @line"
+  220 render --ftext "@center @bold Styled"
   printf '12345\n12345\n@fi' | 220 print
 
 File content and --ftext use the same interpreter. --text prints its string
@@ -20,6 +20,7 @@ literally. Neither string option resolves its value as a file path. With no
 input argument, check, compile, render, and print read interpreted standard
 input; a positional - selects it explicitly.
 Run 220 render before a physical print when changing layout or finish behavior.
-Use @fi as the final source line for a four-line margin and installed-shape cut.
+Use @fi wherever a four-line margin and installed-shape cut are wanted. It may
+repeat, initializes after each cut, and leaves later output at printer defaults.
 ]],
 }

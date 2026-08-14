@@ -10,9 +10,10 @@ through the CLI:
 
   !tm-u220 job 1
 
-With that header, only column-one # comments may precede it. After it, # starts a
-comment, ## prints one leading #, and @@ prints one leading @. Headerless input
-keeps ordinary # heading lines printable while still executing @directives.
+In an interpreted job body, a column-one # starts a comment, ## prints one
+leading #, and @@ prints one leading @. With an authored header, every preceding
+# line is a framing comment; no other preamble is valid. Headerless input follows
+the same body comment and escape rules.
 
 Unknown directives, malformed arguments, and impossible layout stop compilation
 before any printer bytes are produced.

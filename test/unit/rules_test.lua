@@ -47,7 +47,8 @@ test("rules topics explain the actual authoring contracts", function()
         job = { ".u220", "!tm-u220 job 1", "strict" },
         directives = {
             "@align", "@upside-down", "@font a | @emphasis on",
-            "@rule PATTERN", "@kv", "@table [TABLE_ALIGN,]COLUMN", "@end-table",
+            "@rule PATTERN", "@kv", "@kv_start", "@kv_end",
+            "@table [TABLE_ALIGN,]COLUMN", "@end-table",
             "@cut installed", "@lf N", "aliases.u220a",
         },
         profile = { "config/printers/local.u220p", "--profile" },
@@ -72,7 +73,7 @@ test("directives rules lead with native controls and keep aliases inline", funct
     for _, fragment in ipairs({
         "@left/@center/@right", "@bold -> on", "@normal-size off/off",
         "@underline/@ul -> single", "@lf N -> @feed N",
-        "bare @cut -> @cut installed",
+        "bare @cut -> @cut installed", "@center @bold TEXT", "@title -> center",
     }) do
         local position = assert(value:find(fragment, 1, true))
         check.truthy(position < utilities, fragment .. " must stay beside native controls")
@@ -82,6 +83,36 @@ test("directives rules lead with native controls and keep aliases inline", funct
     check.truthy(assert(value:find("@fi", 1, true)) > utilities)
     check.falsy(value:find("Standard configured aliases:", 1, true))
     check.contains(value, "config/directives/aliases.u220a")
+end)
+
+test("directives rules describe inferred boundaries and reusable finish", function()
+    local value = assert(rules.render("directives"))
+    for _, fragment in ipairs({
+        "Pipes are optional",
+        "@center @bold Receipt",
+        "final @init is a postlude",
+        "feed the ordinary text line before resetting",
+        "reusable shorthand for @feed 4",
+        "it may repeat",
+        "then @init",
+        "later output begins from printer defaults",
+    }) do
+        check.contains(value, fragment)
+    end
+end)
+
+test("directives rules describe key-value source blocks", function()
+    local value = assert(rules.render("directives"))
+    for _, fragment in ipairs({
+        "@kv_start ... @kv_end",
+        "valid implicit rows become @kv",
+        "keep their ordinary meaning",
+        "including blank lines, comments, text",
+        "An explicit @kv remains strict",
+        "nest, and must be paired",
+    }) do
+        check.contains(value, fragment)
+    end
 end)
 
 test("directives rules describe the current table grammar", function()

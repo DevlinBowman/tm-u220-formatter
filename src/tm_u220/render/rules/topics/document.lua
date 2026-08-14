@@ -5,8 +5,8 @@ return {
 220 rules document - Interpreted and plain input
 
 Default mode interprets an existing ordinary file or a quoted text argument.
-Canonical @directives execute automatically; no header is needed. Ordinary lines
-and # headings still print.
+Canonical @directives and column-one # comments execute automatically; no header
+is needed. Ordinary lines print, and ## escapes a printable leading #.
 
   220 render notes.txt
   220 print "hello from the printer"
@@ -23,7 +23,7 @@ applies the same interpreter used after loading an existing file. Neither value
 is ever opened as a path, even when a readable file has the same name.
 
   220 print --text "@emphasis on"
-  220 render --ftext "@emphasis on | @text Styled | @line"
+  220 render --ftext "@center @bold Styled"
 
 The forms are mutually exclusive and cannot accompany a positional input. Both
 types remove the UTF-8 BOM and preserve valid Unicode. Standard-model resident

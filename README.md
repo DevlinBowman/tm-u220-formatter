@@ -120,13 +120,12 @@ A job can be ordinary text or a UTF-8 document with native directives:
 ```text
 !tm-u220 job 1
 @profile variant=B paper=76 dip2_1=off cutter=partial
-@align center
-@emphasis on
-OPEN CIRCUIT COFFEE
-@emphasis off
-@align left
-@kv Espresso | $3.50
-@kv Oat milk | $0.75
+@center @bold OPEN CIRCUIT COFFEE
+@bold off @left
+@kv_start
+Espresso | $3.50
+Oat milk | $0.75
+@kv_end
 @rule -
 @kv TOTAL | $4.25
 @fi
