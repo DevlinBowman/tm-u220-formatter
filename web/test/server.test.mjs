@@ -124,7 +124,8 @@ test("compiler bridge resolves companion PBM images only from its fixed document
   });
   assert.equal(result.valid, true);
   assert.equal(result.lines[0].kind, "image");
-  assert.equal(result.lines[0].segments[0].mask_data, "0000F8F8F8F8F80000");
+  assert.equal(result.lines[0].segments[0].mask_data,
+    "00000000AA805540AA805540AA8000000000");
 
   const traversal = await compileBuffer("@image ../outside.pbm 1 1", {
     root, profile, imageProfile, target: fixture.path, plain: false,
@@ -141,20 +142,20 @@ test("compiler bridge renders a direct PNG from its canonical printer mask", asy
   assert.equal(result.input_kind, "image");
   assert.equal(result.lines[0].kind, "image");
   assert.equal(segment.kind, "bit_image");
-  assert.equal(segment.mask_width_dots, 200);
+  assert.equal(segment.mask_width_dots, 400);
   assert.equal(segment.mask_height_dots, 126);
-  assert.equal(segment.mask_data.length, 6300);
+  assert.equal(segment.mask_data.length, 12600);
   const mask = Buffer.from(segment.mask_data, "hex");
   let strikes = 0;
   for (const byte of mask) {
     for (let bit = 0; bit < 8; bit += 1) strikes += (byte >> bit) & 1;
   }
-  assert.equal(strikes, 8498);
+  assert.equal(strikes, 7331);
   assert.equal(segment.width_half_dots, 400);
   assert.equal(segment.character_cell_height_vertical_units, 252);
   assert.equal(result.paper_preview.max_y_vertical_units, 260);
   assert.equal(createHash("sha256").update(mask).digest("hex"),
-    "cd8fd464a92643ab7772263f5123a1a9fb7699bb9d4cd0b38b16ffe840bf48f8");
+    "37e8495bb8c97fce66fd3a2b48d7c4c4c004c89c9f727e3ebc3619476fc718d1");
 });
 
 test("compiler bridge renders a direct JPEG from its canonical printer mask", async () => {
@@ -163,12 +164,12 @@ test("compiler bridge renders a direct JPEG from its canonical printer mask", as
 
   assert.equal(result.valid, true);
   assert.equal(result.input_kind, "image");
-  assert.equal(segment.mask_width_dots, 200);
+  assert.equal(segment.mask_width_dots, 400);
   assert.equal(segment.mask_height_dots, 129);
-  assert.equal(segment.mask_data.length, 6450);
+  assert.equal(segment.mask_data.length, 12900);
   assert.equal(result.paper_preview.max_y_vertical_units, 276);
   assert.equal(createHash("sha256").update(Buffer.from(segment.mask_data, "hex")).digest("hex"),
-    "c6799b7b6757592e5b6f9b88fe95f6ca284b1a3cb549ab787d7a6551cc642b54");
+    "2f9968483b23c590d878413b946ebc09af29948ce3770ef79525cb2cf7e44103");
 });
 
 test("direct PNG sessions expose description text without making it compiler input", async () => {

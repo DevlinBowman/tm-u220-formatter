@@ -114,15 +114,16 @@ Stop its loopback server with Ctrl-C when tuning is finished.
 Image interpretation uses a separate versioned data profile rather than adding
 artistic choices to the physical printer profile. The shipped file is
 `config/images/default.u220i`; `220 config` opens its active editable copy as
-the third of three Vim tabs.
+the third of three Vim tabs. The shipped tuning applies to fresh checkouts and
+installations; configuration setup preserves an existing managed user copy.
 
 ```text
 !tm-u220 image-profile 1
-density=solid
+density=detail
 fit=contain
-resample=bilinear
-dither=floyd
-threshold=128
+resample=area
+dither=ordered
+threshold=61
 invert=off
 unidirectional=on
 trailing_gap_vertical_units=4
@@ -159,16 +160,20 @@ density of those impacts; it does not create gray ink.
 - `floyd` propagates quantization error into nearby positions. Its less regular
   impact pattern usually retains more photographic shading.
 
-For photographs, `resample=bilinear` with `dither=floyd` is the recommended
-starting point. The live editor makes the resulting physical mask visible before
-saving it.
+The shipped profile starts with `resample=area` and `dither=ordered`. Area
+resampling preserves averaged tone when a large source is reduced, while ordered
+dithering produces a stable strike pattern that is easy to inspect in the live
+editor. `bilinear` with `floyd` remains a useful alternative when smoother,
+less-regular photographic shading is preferred.
 
-Solid density is the safe 80 × 72 dpi default and can produce uninterrupted
-dark regions. Detail density provides twice as many horizontal positions at
-160 × 72 dpi, but the TM-U220 mode cannot safely strike horizontally adjacent
-positions. The preparation stage removes such adjacency and the band packer
-validates it again, so detail mode can look lighter and is not automatically
-better for photographs.
+Solid density is the model's safe 80 × 72 dpi fallback and can produce
+uninterrupted dark regions. The shipped profile selects detail density, which
+provides twice as many horizontal positions at 160 × 72 dpi, but the TM-U220
+mode cannot safely strike horizontally adjacent positions. The preparation
+stage removes such adjacency and the band packer validates it again, so detail
+mode can look lighter and is not automatically better for photographs. The
+editor schema still exposes the model fallbacks (`solid`, `bilinear`, `floyd`,
+and threshold `128`) separately from these shipped configuration choices.
 
 ## Asset boundary
 

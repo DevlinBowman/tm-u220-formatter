@@ -30,14 +30,14 @@ function succeed(args, source) {
 
 test("inspect returns canonical typed profile and editor schema", () => {
   const source = defaultSource
-    .replace("dither=floyd", "dither=ordered")
-    .replace("threshold=128", "threshold=91")
+    .replace("dither=ordered", "dither=floyd")
+    .replace("threshold=61", "threshold=91")
     .replace("default_width_cells=page", "default_width_cells=18");
   const result = succeed(["inspect"], source);
 
   assert.equal(result.valid, true);
   assert.equal(result.profile_source, source);
-  assert.equal(result.image_profile.dither, "ordered");
+  assert.equal(result.image_profile.dither, "floyd");
   assert.equal(result.image_profile.threshold, 91);
   assert.equal(result.image_profile.default_width_cells, 18);
   assert.deepEqual(result.diagnostics, []);
@@ -60,7 +60,7 @@ test("inspect returns canonical typed profile and editor schema", () => {
 
 test("inspect reports invalid drafts with explicit null values", () => {
   const result = succeed(["inspect"], defaultSource.replace(
-    "dither=floyd", "dither=photographic"));
+    "dither=ordered", "dither=photographic"));
 
   assert.equal(result.valid, false);
   assert.equal(result.profile_source, null);
@@ -78,17 +78,17 @@ test("compile emits exact preview geometry without printer bytes", () => {
   const segment = result.lines[0].segments[0];
 
   assert.equal(result.valid, true);
-  assert.equal(result.byte_count, 3339);
+  assert.equal(result.byte_count, 6539);
   assert.equal(result.input_kind, "image");
-  assert.equal(result.image_profile.dither, "floyd");
+  assert.equal(result.image_profile.dither, "ordered");
   assert.equal(result.profile_source, source);
   assert.equal(segment.kind, "bit_image");
-  assert.equal(segment.mask_width_dots, 200);
+  assert.equal(segment.mask_width_dots, 400);
   assert.equal(segment.mask_height_dots, 126);
   assert.equal(result.paper_preview.max_y_vertical_units, 260);
   assert.equal(crypto.createHash("sha256")
     .update(Buffer.from(segment.mask_data, "hex")).digest("hex"),
-  "cd8fd464a92643ab7772263f5123a1a9fb7699bb9d4cd0b38b16ffe840bf48f8");
+  "37e8495bb8c97fce66fd3a2b48d7c4c4c004c89c9f727e3ebc3619476fc718d1");
   for (const forbidden of ["bytes", "encoded_parts", "nodes", "document", "source"]) {
     assert.equal(Object.hasOwn(result, forbidden), false, forbidden);
   }
@@ -98,7 +98,7 @@ test("compile returns profile diagnostics before reading the image", () => {
   const result = succeed([
     "compile", "--image", "/missing/private/image.png",
     "--profile", "/missing/private/profile.u220p",
-  ], defaultSource.replace("threshold=128", "threshold=999"));
+  ], defaultSource.replace("threshold=61", "threshold=999"));
 
   assert.equal(result.valid, false);
   assert.equal(result.byte_count, 0);

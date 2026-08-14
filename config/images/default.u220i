@@ -1,9 +1,9 @@
 !tm-u220 image-profile 1
-density=solid
+density=detail
 fit=contain
-resample=bilinear
-dither=floyd
-threshold=128
+resample=area
+dither=ordered
+threshold=61
 invert=off
 unidirectional=on
 trailing_gap_vertical_units=4

@@ -25,12 +25,12 @@ test("read and save return canonical schema-bound profile state", async (t) => {
   t.after(() => fs.rmSync(item.directory, { recursive: true, force: true }));
   const first = await item.store.read();
   assert.equal(first.profile_name, "default.u220i");
-  assert.equal(first.image_profile.dither, "floyd");
+  assert.equal(first.image_profile.dither, "ordered");
   assert.equal(first.schema.fields.length, 10);
 
-  const draft = first.source.replace("dither=floyd", "dither=ordered");
+  const draft = first.source.replace("dither=ordered", "dither=floyd");
   const saved = await item.store.save({ source: draft, revision: first.revision });
-  assert.equal(saved.image_profile.dither, "ordered");
+  assert.equal(saved.image_profile.dither, "floyd");
   assert.equal(saved.source, draft);
   assert.notEqual(saved.revision, first.revision);
   assert.equal(fs.readFileSync(item.profile, "utf8"), draft);
@@ -42,7 +42,7 @@ test("invalid and stale saves preserve the current profile", async (t) => {
   const first = await item.store.read();
   const before = fs.readFileSync(item.profile, "utf8");
   await assert.rejects(() => item.store.save({
-    source: first.source.replace("threshold=128", "threshold=999"),
+    source: first.source.replace("threshold=61", "threshold=999"),
     revision: first.revision,
   }), (error) => error.status === 422 && Array.isArray(error.diagnostics));
   assert.equal(fs.readFileSync(item.profile, "utf8"), before);

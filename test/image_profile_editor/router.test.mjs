@@ -137,9 +137,9 @@ test("preview route returns the canonical unsaved printer mask", async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.valid, true);
   const segment = result.body.lines[0].segments[0];
-  assert.equal(segment.mask_width_dots, 200);
+  assert.equal(segment.mask_width_dots, 400);
   assert.equal(segment.mask_height_dots, 126);
   assert.equal(crypto.createHash("sha256").update(
     Buffer.from(segment.mask_data, "hex")).digest("hex"),
-  "cd8fd464a92643ab7772263f5123a1a9fb7699bb9d4cd0b38b16ffe840bf48f8");
+  "37e8495bb8c97fce66fd3a2b48d7c4c4c004c89c9f727e3ebc3619476fc718d1");
 });
