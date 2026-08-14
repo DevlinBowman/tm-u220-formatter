@@ -77,7 +77,7 @@ end }
 
 tests[#tests + 1] = { "forwarding and alignment aliases stay canonical", function()
     local document = job.parse(source({
-        "@lf 3 | @bold | @left | @bold off | @center | @right",
+        "@lf 3 | @bold | @left | @bold off | @center | @right | @title",
     }))
     check.equal(#document.diagnostics, 0)
     local expected = {
@@ -87,6 +87,10 @@ tests[#tests + 1] = { "forwarding and alignment aliases stay canonical", functio
         { "emphasis", "enabled", false },
         { "align", "value", "center" },
         { "align", "value", "right" },
+        { "align", "value", "center" },
+        { "double_width", "enabled", false },
+        { "double_height", "enabled", true },
+        { "emphasis", "enabled", true },
     }
     for index, item in ipairs(expected) do
         check.equal(document.ops[index].kind, item[1])
@@ -99,6 +103,7 @@ tests[#tests + 1] = { "user aliases expand only through canonical targets", func
         "!tm-u220 aliases 1",
         "@big-red == @emphasis on | @double-height on | @color red",
         "@skip * == @feed *",
+        "@say * == @text *",
     }, "\n"))
     check.equal(#configured.diagnostics, 0)
 
@@ -112,6 +117,12 @@ tests[#tests + 1] = { "user aliases expand only through canonical targets", func
     check.equal(document.ops[3].value, "red")
     check.equal(document.ops[4].kind, "feed")
     check.equal(document.ops[4].value, 2)
+
+    document = job.parse(source({ "@say  padded  " }), {
+        aliases = configured.entries,
+    })
+    check.equal(#document.diagnostics, 0)
+    check.equal(document.ops[1].text, " padded  ")
 
     configured = AliasFile.parse(table.concat({
         "!tm-u220 aliases 1",
@@ -151,10 +162,10 @@ tests[#tests + 1] = { "aliases compile to canonical bytes", function()
     check.equal(concise_result.bytes, canonical_result.bytes)
 end }
 
-tests[#tests + 1] = { "fixed aliases reject arguments", function()
+tests[#tests + 1] = { "actions and invalid canonical arguments stay strict", function()
     for _, directive in ipairs({
-        "@red dark", "@font-a b", "@ul single", "@ul-off now",
-        "@underline-double double", "@large huge", "@normal-size now", "@lf",
+        "@lf", "@lf nope", "@cut Receipt", "@align sideways", "@font c",
+        "@fi Receipt", "@init Receipt",
     }) do
         local document = job.parse(source({ directive }))
         check.equal(#document.ops, 0, directive)

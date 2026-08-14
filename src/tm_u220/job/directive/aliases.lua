@@ -51,7 +51,7 @@ function M.expand(name, arguments, configured)
     local expanded = {}
     for _, target in ipairs(targets) do
         expanded[#expanded + 1] = {
-            target[1], target[2] == "*" and value or target[2],
+            target[1], target[2] == "*" and arguments or target[2],
         }
     end
     return expanded

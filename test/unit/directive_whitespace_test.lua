@@ -81,7 +81,7 @@ end }
 
 tests[#tests + 1] = { "non-whitespace syntax remains invalid", function()
     local cases = {
-        { "@align center extra", "job.directive.invalid_arguments" },
+        { "@align sideways", "job.directive.invalid_arguments" },
         { " @init extra", "job.directive.invalid_arguments" },
         { "\t@font:a", "job.directive.invalid_syntax" },
         { "  @not-real on", "job.directive.unknown" },

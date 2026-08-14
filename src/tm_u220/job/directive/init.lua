@@ -1,13 +1,13 @@
 -- Parses authored directives after resolving concise spellings to canonical input.
 -- Downstream job operations therefore remain independent of authoring aliases.
 local Aliases = require("tm_u220.job.directive.aliases")
-local Chain = require("tm_u220.job.directive.chain")
 local Image = require("tm_u220.job.directive.image")
 local Scalar = require("tm_u220.job.directive.scalar")
 local Finish = require("tm_u220.job.directive.finish")
 local Structured = require("tm_u220.job.directive.structured")
 local Tabular = require("tm_u220.job.directive.tabular")
 local Syntax = require("tm_u220.job.directive.syntax")
+local SourceLine = require("tm_u220.job.directive.source_line")
 
 local M = {}
 local PARSERS = { Scalar, Image, Finish, Tabular, Structured }
@@ -96,11 +96,7 @@ local function parse_authored(line, span, aliases)
 end
 
 function M.parse_many(line, span, aliases)
-    local whole = parse_authored(line, span, aliases)
-    if whole and Chain.operation_owner(whole) then
-        return whole
-    end
-    return Chain.parse(line, span, function(member, member_span)
+    return SourceLine.parse(line, span, function(member, member_span)
         return parse_authored(member, member_span, aliases)
     end)
 end

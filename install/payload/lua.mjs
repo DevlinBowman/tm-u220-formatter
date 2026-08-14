@@ -94,6 +94,7 @@ export const LUA_PAYLOAD = Object.freeze([
   { path: "src/tm_u220/job/directive/image.lua", mode: 0o644 },
   { path: "src/tm_u220/job/directive/init.lua", mode: 0o644 },
   { path: "src/tm_u220/job/directive/scalar.lua", mode: 0o644 },
+  { path: "src/tm_u220/job/directive/source_line.lua", mode: 0o644 },
   { path: "src/tm_u220/job/directive/structured.lua", mode: 0o644 },
   { path: "src/tm_u220/job/directive/syntax.lua", mode: 0o644 },
   { path: "src/tm_u220/job/directive/tabular.lua", mode: 0o644 },

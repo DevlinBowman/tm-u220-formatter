@@ -1,5 +1,5 @@
 -- Splits authored directive chains while preserving text-bearing pipe semantics.
--- Each member may expand into several canonical operations, which are flattened in order.
+-- Members may expand into canonical operation sequences, which are flattened in order.
 local M = {}
 local Syntax = require("tm_u220.job.directive.syntax")
 local SEPARATOR = " | @"
@@ -24,17 +24,24 @@ local function directive_name(value)
     return Syntax.directive_name(value)
 end
 
-local function next_candidate(line, cursor, include_escaped)
+local function next_pipe(line, cursor, include_escaped)
     while true do
         local pipe = line:find("|", cursor, true)
+        if not pipe then return nil end
+        local escaped = line:sub(pipe - 1, pipe - 1) == "\\"
+        if include_escaped or not escaped then return pipe end
+        cursor = pipe + 1
+    end
+end
+
+local function next_candidate(line, cursor, include_escaped)
+    while true do
+        local pipe = next_pipe(line, cursor, include_escaped)
         if not pipe then return nil end
         local at = pipe + 1
         while line:sub(at, at):match("[ \t]") do at = at + 1 end
         local name = line:sub(at):match("^@([a-z][a-z%-]*)")
-        local escaped = line:sub(pipe - 1, pipe - 1) == "\\"
-        if name and (include_escaped or not escaped) then
-            return pipe, at, name
-        end
+        if name then return pipe, at, name end
         cursor = pipe + 1
     end
 end
@@ -84,14 +91,8 @@ function M.parse(line, span, parse_member)
     for _, source in ipairs(sources) do
         local expanded, failure = parse_member(source, span)
         if failure then return nil, failure end
-        local owner = M.operation_owner(expanded)
-        if owner then
-            return nil, {
-                code = "job.directive.invalid_syntax",
-                message = owner
-                    .. " cannot be used in a source-line directive sequence",
-            }
-        end
+        local owner_failure = M.owner_failure(expanded)
+        if owner_failure then return nil, owner_failure end
         for _, operation in ipairs(expanded) do
             operations[#operations + 1] = operation
         end
@@ -101,12 +102,22 @@ end
 
 M.SEPARATOR = SEPARATOR
 M.find_candidate = next_candidate
+M.find_pipe = next_pipe
 
 function M.operation_owner(operations)
     for _, operation in ipairs(operations or {}) do
         local owner = operation_owners[operation.kind]
         if owner then return owner end
     end
+end
+
+function M.owner_failure(operations)
+    local owner = M.operation_owner(operations)
+    if not owner then return nil end
+    return {
+        code = "job.directive.invalid_syntax",
+        message = owner .. " cannot be used in a source-line directive sequence",
+    }
 end
 
 function M.find_separator(line, cursor)

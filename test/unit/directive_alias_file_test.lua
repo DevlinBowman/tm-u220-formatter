@@ -49,7 +49,7 @@ tests[#tests + 1] = { "checked-in alias catalog is versioned and complete", func
     check.truthy(catalog, failure and failure.message)
     check.contains(catalog.path, "/config/directives/aliases.u220a")
     for _, name in ipairs({
-        "lf", "bold", "left", "center", "right", "cut", "large",
+        "lf", "bold", "left", "center", "right", "cut", "large", "title",
     }) do
         check.truthy(catalog.entries[name], "missing standard alias @" .. name)
     end

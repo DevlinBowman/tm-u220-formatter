@@ -69,6 +69,8 @@ local suites = {
     "integration.tabular_test",
     "integration.code_page_directive_test",
     "integration.directive_alias_test",
+    "integration.source_line_sequence_test",
+    "integration.init_postlude_test",
     "integration.directive_chain_test",
     "integration.user_config_test",
     "integration.string_input_print_test",

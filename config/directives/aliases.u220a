@@ -25,6 +25,9 @@
 @tall == @double-width off | @double-height on
 @large == @double-width on | @double-height on
 
+# Composite presets.
+@title == @align center | @double-width off | @double-height on | @emphasis on
+
 # Underline conveniences and canonical argument pass-through.
 @underline == @underline single
 @underline * == @underline *
